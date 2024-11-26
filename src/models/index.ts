@@ -3,11 +3,13 @@ import User from "./user.model";
 import Service from "@/models/service.model";
 import SubService from "@/models/subService.model";
 import SubServiceRequirement from "@/models/subServiceRequirement.model";
+import UserDocument from "@/models/userDocument.model";
 
 export const db = {
   User,
   Notification,
   Service,
   SubService,
-  SubServiceRequirement
+  SubServiceRequirement,
+  UserDocument
 };

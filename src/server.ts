@@ -3,8 +3,9 @@ import './config/module-alias';
 import http from "http";
 import express from "express";
 import app from "@/app";
+import { configDotenv } from "dotenv";
 
-
+configDotenv()
 const { combine, timestamp, printf, colorize, align } = winston.format;
 
 interface LoggerConfig {

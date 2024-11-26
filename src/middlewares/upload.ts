@@ -77,3 +77,84 @@ export const handleMulterError = (
     }
     next();
   };
+
+  const userDocumentStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'user_documents', // folder name in cloudinary for user documents
+      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'], // allowed formats for user documents
+      resource_type: 'auto', // allows for non-image file types
+    }
+  });
+  
+  // Create multer upload middleware for user documents
+  export const uploadUserDocument = multer({
+    storage: userDocumentStorage,
+    limits: {
+      fileSize: 1024 * 1024 * 10 // 10MB limit for user documents
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Allowed types: JPG, PNG, PDF, DOC, DOCX'));
+      }
+    }
+  }).single('document'); 
+  
+  export const deleteCloudinaryUserDocument = async (documentUrl: string) => {
+    try {
+      if (!documentUrl || documentUrl === "http") return;
+      
+      // Extract public_id from Cloudinary URL
+      const publicId = documentUrl
+        .split('/')
+        .slice(-1)[0]
+        .split('.')[0];
+        
+      if (publicId) {
+        await cloudinary.uploader.destroy(`user_documents/${publicId}`);
+      }
+    } catch (error) {
+      console.error('Error deleting document from Cloudinary:', error);
+    }
+  };
+  
+  export const handleUserDocumentUploadError = (
+    error: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return next(createCustomError('File size is too large. Max size is 10MB', StatusCode.BAD_REQ));
+      }
+      return next(createCustomError(error.message, StatusCode.BAD_REQ));
+    }
+    if (error) {
+      return next(createCustomError(error.message, StatusCode.BAD_REQ));
+    }
+    next();
+  };
+  
+  // Middleware to handle the file upload and add the URL to the request body
+  export const processUserDocumentUpload = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    uploadUserDocument(req, res, (error) => {
+      if (error) {
+        return handleUserDocumentUploadError(error, req, res, next);
+      }
+      
+      if (req.file) {
+        // Add the Cloudinary URL to the request body
+        req.body.documentUrl = req.file.path;
+      }
+      
+      next();
+    });
+  };

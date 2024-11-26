@@ -26,11 +26,7 @@ export const signup: RequestHandler = bigPromise(
       if (
         !email &&
         !password &&
-        !fullName &&
-        !phoneNumber &&
-        !aadharNumber &&
-        !panNumber &&
-        !dateOfBirth
+        !fullName 
       ) {
         return next(
           createCustomError("All fields are required", StatusCode.BAD_REQ)
@@ -59,8 +55,8 @@ export const signup: RequestHandler = bigPromise(
 
       const token = jwt.sign(
         { userId: user._id, email: user.email },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
       );
 
       const userResponse = user.toObject();
@@ -110,10 +106,9 @@ export const login: RequestHandler = bigPromise(
         // Create token
         const token = jwt.sign(
           { userId: user._id, email: user.email },
-          JWT_SECRET,
-          { expiresIn: JWT_EXPIRES_IN }
+          process.env.JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES_IN }
         );
-  
         // Remove password from response
         const userResponse = user.toObject();
         delete userResponse.password;

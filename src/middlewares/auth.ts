@@ -17,7 +17,7 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
-    console.log(decoded)
+    
     const user = await db.User.findById(decoded.userId);
 
     if (!user) {

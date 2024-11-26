@@ -924,10 +924,9 @@ export const deleteSubServiceRequirement = bigPromise(
 export const toggleSubServiceRequirementMandatory = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { subServiceId, requirementId } = req.params;
+      const {  requirementId } = req.params;
 
       if (
-        !mongoose.Types.ObjectId.isValid(subServiceId) ||
         !mongoose.Types.ObjectId.isValid(requirementId)
       ) {
         return next(
@@ -937,7 +936,7 @@ export const toggleSubServiceRequirementMandatory = bigPromise(
 
       const subServiceRequirement = await db.SubServiceRequirement.findOne({
         _id: requirementId,
-        subServiceId: subServiceId,
+ 
       });
 
       if (!subServiceRequirement) {

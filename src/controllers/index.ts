@@ -5,6 +5,7 @@ import * as notificationController from "@/controllers/notification.controller"
 import * as serviceController from "@/controllers/service.controller"
 import * as subServiceController from "@/controllers/subService.controller"
 import * as subServiceRequirementController from "@/controllers/subServiceRequirement.controller"
+import * as userDocumentController from "@/controllers/userDocument.controller"
 export const controllers = {
     authController,
     userController,
@@ -12,5 +13,6 @@ export const controllers = {
     notificationController,
     serviceController,
     subServiceController,
-    subServiceRequirementController
+    subServiceRequirementController,
+    userDocumentController
 }

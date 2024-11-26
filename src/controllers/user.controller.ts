@@ -5,6 +5,8 @@ import { sendSuccessApiResponse } from '@/middlewares/successApiResponse';
 import bigPromise from '@/middlewares/bigPromise';
 import { AuthRequest } from '@/middlewares/auth';
 import { IUser } from '@/interfaces';
+import mongoose from 'mongoose';
+import { db } from '@/models';
 
 export const getUserDetails = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -65,5 +67,63 @@ export const editOwnProfile = bigPromise(
     }
   );
   
+
+
+export const getAllDocumentsByUserId = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId  = req.user?._id;
+
+      // Validate userId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return next(createCustomError("Invalid user ID", StatusCode.BAD_REQ));
+      }
+
+      // Fetch user documents with populated subService
+      const userDocuments = await db.UserDocument.aggregate([
+        {
+          $match: { userId: new mongoose.Types.ObjectId(userId) }
+        },
+        {
+          $lookup: {
+            from: 'subService', // Make sure this matches your SubService collection name
+            localField: 'subServiceId',
+            foreignField: '_id',
+            as: 'subService'
+          }
+        },
+        {
+          $unwind: '$subService'
+        },
+        {
+          $project: {
+            _id: 1,
+            documentType: 1,
+            title: 1,
+            description: 1,
+            documentUrl: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'subService._id': 1,
+            'subService.title': 1
+          }
+        }
+      ]);
+
+      if (userDocuments.length === 0) {
+        return next(createCustomError("No documents found for this user", StatusCode.NOT_FOUND));
+      }
+
+      const response = sendSuccessApiResponse(
+        "User documents retrieved successfully",
+        { userDocuments }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
   
 

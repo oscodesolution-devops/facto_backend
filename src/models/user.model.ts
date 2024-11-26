@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     phoneNumber: {
       type: Number,
-      required: [true, "Phone number is required"],
+      
       validate: {
         validator: function (v: number) {
           return /^[6-9]\d{9}$/.test(v.toString());
@@ -46,7 +46,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     aadharNumber: {
       type: Number,
-      required: [true, "Aadhar number is required"],
+      
       unique: true,
       validate: {
         validator: function (v: number) {
@@ -57,7 +57,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     panNumber: {
       type: String,
-      required: [true, "PAN number is required"],
+      
       unique: true,
       uppercase: true,
       validate: {
@@ -69,7 +69,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     dateOfBirth: {
       type: Date,
-      required: [true, "Date of birth is required"],
+      
       validate: {
         validator: function (v: Date) {
           const eighteenYearsAgo = new Date();
