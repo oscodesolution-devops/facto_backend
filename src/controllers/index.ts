@@ -6,6 +6,7 @@ import * as serviceController from "@/controllers/service.controller"
 import * as subServiceController from "@/controllers/subService.controller"
 import * as subServiceRequirementController from "@/controllers/subServiceRequirement.controller"
 import * as userDocumentController from "@/controllers/userDocument.controller"
+import * as courseController from "@/controllers/course.controller"
 export const controllers = {
     authController,
     userController,
@@ -14,5 +15,6 @@ export const controllers = {
     serviceController,
     subServiceController,
     subServiceRequirementController,
-    userDocumentController
+    userDocumentController,
+    courseController
 }

@@ -46,38 +46,13 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     aadharNumber: {
       type: Number,
-      
-      unique: true,
-      validate: {
-        validator: function (v: number) {
-          return /^\d{12}$/.test(v.toString());
-        },
-        message: "Please enter a valid 12-digit Aadhar number",
-      },
+    
     },
     panNumber: {
       type: String,
-      
-      unique: true,
-      uppercase: true,
-      validate: {
-        validator: function (v: string) {
-          return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(v);
-        },
-        message: "Please enter a valid PAN number (e.g., ABCDE1234F)",
-      },
     },
     dateOfBirth: {
       type: Date,
-      
-      validate: {
-        validator: function (v: Date) {
-          const eighteenYearsAgo = new Date();
-          eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-          return v <= eighteenYearsAgo;
-        },
-        message: "Must be at least 18 years old",
-      },
     },
     profilePictureUrl: {
       type: String,

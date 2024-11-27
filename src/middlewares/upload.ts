@@ -158,3 +158,119 @@ export const handleMulterError = (
       next();
     });
   };
+
+  const courseThumbnailStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'course_thumbnails',
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [{ width: 1280, height: 720, crop: 'limit' }]
+    }
+  });
+  
+  const courseVideoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'course_videos',
+      allowed_formats: ['mp4', 'mov', 'avi'],
+      resource_type: 'video'
+    }
+  });
+
+  export const uploadCourseThumbnail = multer({
+    storage: courseThumbnailStorage,
+    limits: {
+      fileSize: 1024 * 1024 * 5 // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not an image! Please upload an image for the course thumbnail.'));
+      }
+    }
+  }).single('thumbnail');
+
+  export const uploadCourseVideo = multer({
+    storage: courseVideoStorage,
+    limits: {
+      fileSize: 1024 * 1024 * 500 // 500MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not a video! Please upload a video file.'));
+      }
+    }
+  }).single('video');
+
+  export const deleteCourseThumbnail = async (thumbnailUrl: string) => {
+    try {
+      if (!thumbnailUrl) return;
+      
+      const publicId = thumbnailUrl
+        .split('/')
+        .slice(-1)[0]
+        .split('.')[0];
+        
+      if (publicId) {
+        await cloudinary.uploader.destroy(`course_thumbnails/${publicId}`);
+      }
+    } catch (error) {
+      console.error('Error deleting course thumbnail from Cloudinary:', error);
+    }
+  };
+
+  export const deleteCourseVideo = async (videoUrl: string) => {
+    try {
+      if (!videoUrl) return;
+      
+      const publicId = videoUrl
+        .split('/')
+        .slice(-1)[0]
+        .split('.')[0];
+        
+      if (publicId) {
+        await cloudinary.uploader.destroy(`course_videos/${publicId}`, { resource_type: 'video' });
+      }
+    } catch (error) {
+      console.error('Error deleting course video from Cloudinary:', error);
+    }
+  };
+
+  export const processCourseThumbnailUpload = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    uploadCourseThumbnail(req, res, (error) => {
+      if (error) {
+        return handleMulterError(error, req, res, next);
+      }
+      
+      if (req.file) {
+        req.body.thumbnailUrl = req.file.path;
+      }
+      
+      next();
+    });
+  };
+
+  export const processCourseVideoUpload = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    uploadCourseVideo(req, res, (error) => {
+      if (error) {
+        return handleMulterError(error, req, res, next);
+      }
+      
+      if (req.file) {
+        req.body.videoUrl = req.file.path;
+      }
+      
+      next();
+    });
+  };

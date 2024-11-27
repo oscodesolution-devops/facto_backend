@@ -1,20 +1,23 @@
 import mongoose from "mongoose";
-interface ICourseLecture {
-  title: string;
-  videoUrl: string;
-  duration: number;
-  isPreview: boolean;
-}
 
-interface ICourse extends mongoose.Document {
+
+interface ICourse extends Document {
   title: string;
-  description: string;
-  instructorId: mongoose.Types.ObjectId;
-  price: number;
-  difficultyLevel: "Beginner" | "Intermediate" | "Advanced";
+  subtitle?: string;
   category: string;
-  previewLectureUrl: string;
-  lectures: ICourseLecture[];
+  language: string;
+  subtitleLanguage?: string;
+  duration: {
+    value: number;
+    unit: 'minutes' | 'hours' | 'days'
+  };
+  totalLectures: number;
+  price: number;
+  description: string;
+  lectures: mongoose.Types.ObjectId[];
+  status: 'draft' | 'published';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface CourseModel extends mongoose.Model<ICourse> {}

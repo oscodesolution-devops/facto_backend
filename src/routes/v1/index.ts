@@ -6,6 +6,7 @@ import notificationRoute from "./notification.route";
 import serviceRoute from "./services.route";
 import subServiceRoute from "./subServices.route";
 import userDocumentRoute from "./userDocument.route";
+import courseRoute from "./courses.route"
 const router: Router = express.Router();
 
 router.use("/auth", authRoute);
@@ -15,6 +16,7 @@ router.use("/notification",notificationRoute);
 router.use("/services",serviceRoute);
 router.use("/sub-services",subServiceRoute);
 router.use("/document",userDocumentRoute);
+router.use("/course",courseRoute);
 
 router.get("/", (req: Request, res: Response) => {
   return res.status(200).send({

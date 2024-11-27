@@ -4,6 +4,8 @@ import Service from "@/models/service.model";
 import SubService from "@/models/subService.model";
 import SubServiceRequirement from "@/models/subServiceRequirement.model";
 import UserDocument from "@/models/userDocument.model";
+import Lecture from "@/models/lecture.model";
+import Course from "@/models/course.model";
 
 export const db = {
   User,
@@ -11,5 +13,7 @@ export const db = {
   Service,
   SubService,
   SubServiceRequirement,
-  UserDocument
+  UserDocument,
+  Lecture,
+  Course,
 };

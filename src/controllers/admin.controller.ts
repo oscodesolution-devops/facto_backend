@@ -6,7 +6,7 @@ import bigPromise from "@/middlewares/bigPromise";
 import { db } from "@/models";
 import { AuthRequest } from "@/middlewares/auth";
 import { signup } from "./auth.controller";
-import { IService, IUser } from "@/interfaces";
+import { ICourse, ILecture, IService, IUser } from "@/interfaces";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { INotification } from "@/interfaces/notificationInterface";
@@ -958,6 +958,175 @@ export const toggleSubServiceRequirementMandatory = bigPromise(
         }`,
         { subServiceRequirement }
       );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+
+export const addCourse = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { title, category, language, subtitleLanguage, duration, price, description,totalLectures }: ICourse = req.body;
+
+      // Validate required fields
+      if (!title || !category || !language || !duration || !price || !description || !totalLectures ) {
+        return next(
+          createCustomError(
+            "All fields are required",
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      // Check if course with same title exists
+      const existingCourse = await db.Course.findOne({ title });
+      if (existingCourse) {
+        return next(
+          createCustomError(
+            "Course with this title already exists",
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      // Create new course
+      const course = await db.Course.create({
+        title,
+        category,
+        language,
+        subtitleLanguage,
+        duration,
+        price,
+        description,
+        totalLectures,
+        lectures: [],
+        status: "draft"
+      });
+
+      const response = sendSuccessApiResponse("Course created successfully", {
+        course,
+      });
+      res.status(StatusCode.CREATED).send(response);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        return next(createCustomError(error.message, StatusCode.BAD_REQ));
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+
+export const addLecture = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+
+      const { courseId } = req.params;
+      const { title, subtitle, lectureNumber, language, subtitleLanguage, duration, courseLevel, isFree }: ILecture = req.body;
+      console.log(courseId)
+      // Validate required fields
+      if (!title || !lectureNumber || !language  || !courseLevel ) {
+        return next(
+          createCustomError(
+            "All fields are required",
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      
+      const course = await db.Course.findById(courseId);
+      if (!course) {
+        return next(
+          createCustomError(
+            "Course not found",
+            StatusCode.NOT_FOUND
+          )
+        );
+      }
+
+    
+      const thumbnailUrl = req.body.thumbnailUrl;
+      const videoUrl = req.body.videoUrl;
+
+      if (!thumbnailUrl || !videoUrl) {
+        return next(
+          createCustomError(
+            "Thumbnail and video are required",
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      
+      const lecture = await db.Lecture.create({
+        title,
+        subtitle,
+        lectureNumber,
+        language,
+        subtitleLanguage,
+        duration,
+        courseLevel,
+        thumbnail: thumbnailUrl,
+        videoUrl: videoUrl,
+        isFree,
+      });
+
+      
+      course.lectures.push(lecture._id);
+      course.totalLectures = course.lectures.length;
+      await course.save();
+
+      const response = sendSuccessApiResponse("Lecture added successfully", {
+        lecture,
+      });
+      res.status(StatusCode.CREATED).send(response);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        console.log(error)
+        return next(createCustomError(error.message, StatusCode.BAD_REQ));
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const publishCourse = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { courseId } = req.params;
+
+      // Check if course exists
+      const course = await db.Course.findById(courseId);
+      if (!course) {
+        return next(
+          createCustomError(
+            "Course not found",
+            StatusCode.NOT_FOUND
+          )
+        );
+      }
+
+      // Check if course has lectures
+      if (course.lectures.length === 0) {
+        return next(
+          createCustomError(
+            "Cannot publish a course without lectures",
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      // Update course status to published
+      course.status = "published";
+      await course.save();
+
+      const response = sendSuccessApiResponse("Course published successfully", {
+        course,
+      });
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
