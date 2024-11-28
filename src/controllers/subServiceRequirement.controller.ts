@@ -11,7 +11,7 @@ export const getAllSubServiceRequirements = bigPromise(
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { subServiceId } = req.params;
-  
+        console.log(subServiceId)
         if (!mongoose.Types.ObjectId.isValid(subServiceId)) {
           return next(
             createCustomError("Invalid subService ID", StatusCode.BAD_REQ)

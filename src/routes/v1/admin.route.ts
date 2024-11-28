@@ -14,6 +14,24 @@ router.post("/create", controllers.adminController.addAdmin);
 router.post("/login", controllers.adminController.login);
 
 router.post(
+  "/add-employee",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.addEmployee
+);
+router.get(
+  "/employees",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getEmployee
+);
+router.get(
+  "/employee/:userId",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getUserById
+)
+router.post(
   "/add-user",
   verifyToken,
   isAdmin,

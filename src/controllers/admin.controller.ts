@@ -41,6 +41,42 @@ export const addUser = bigPromise(
   }
 );
 
+export const addEmployee = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const {email} = req.body;
+      // Use the existing signup controller
+      await signup(req, res, next);
+      const employee = await db.User.findOne({email})
+      employee.role = 'employee'
+
+      await employee.save();
+
+      // const response = sendSuccessApiResponse("Employee added successfully", {
+      //   employee,
+      // });
+      // res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const getEmployee = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const employees = await db.User.find({ role: "employee" }).select("-password");
+
+      const response = sendSuccessApiResponse("Employees retrieved successfully", {
+        employees,
+      });
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
 export const addAdmin = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {

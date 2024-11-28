@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router();
 
 
-router.get('/:serviceId',controllers.subServiceController.getAllSubServicesbyServiceId);
+router.get('/:subServiceId',controllers.subServiceRequirementController.getAllSubServiceRequirements);
 
 
 

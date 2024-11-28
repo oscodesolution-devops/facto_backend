@@ -10,7 +10,7 @@ interface IUser extends mongoose.Document {
   panNumber: string;
   dateOfBirth: Date;
   profilePictureUrl?: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "employee";
   registrationDate: Date;
   lastLogin?: Date;
 }
