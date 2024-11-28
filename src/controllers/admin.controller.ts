@@ -1152,13 +1152,7 @@ export const createBlog = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Use the course materials upload middleware to handle image upload
-      await new Promise((resolve, reject) => {
-        processCourseMaterialsUpload(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(null);
-        });
-      });
-
+      // console.log("first")
       const {
         title,
         content,
@@ -1166,6 +1160,7 @@ export const createBlog = bigPromise(
         reference,
         tags,
       } = req.body;
+      // console.log(req.body)
 
       // Validate required fields
       if (!title || !content || !thumbnailUrl || !reference) {
