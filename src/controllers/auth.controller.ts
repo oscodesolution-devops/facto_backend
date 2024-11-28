@@ -125,3 +125,81 @@ export const login: RequestHandler = bigPromise(
     }
   );
   
+  export const sendOtp: RequestHandler = bigPromise(
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { phoneNo } = req.body;
+  
+        if (!phoneNo ) {
+          return next(createCustomError("Phone number is required", StatusCode.BAD_REQ));
+        }
+  
+        // Find user and explicitly select password
+        const user = await db.User.findOne({ phoneNumber:phoneNo }).select('+password');
+  
+        if (!user) {
+          return next(createCustomError("Invalid credentials", StatusCode.UNAUTH));
+        }
+  
+        // Compare password
+        
+        const response = sendSuccessApiResponse(
+          "OTP sent Successful!",
+          {}
+        );
+  
+        res.status(StatusCode.OK).send(response);
+      } catch (error: any) {
+        next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+      }
+    }
+  );
+
+  export const verifyOtp: RequestHandler = bigPromise(
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { phoneNo, otp } = req.body;
+  
+        if (!phoneNo || !otp) {
+          return next(createCustomError("Phone Number and Otp are required", StatusCode.BAD_REQ));
+        }
+  
+        // Find user and explicitly select password
+        const user = await db.User.findOne({ phoneNumber:phoneNo }).select('+password');
+  
+        if (!user) {
+          return next(createCustomError("Invalid credentials", StatusCode.UNAUTH));
+        }
+  
+        // Compare password
+        
+        if(!(otp==123456)){
+          return next(createCustomError("Invalid OTP", StatusCode.UNAUTH));
+        }
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+  
+        // Create token
+        const token = jwt.sign(
+          { userId: user._id, email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+        // Remove password from response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+  
+        const response = sendSuccessApiResponse(
+          "Login Successful!",
+          { user: userResponse, token }
+        );
+  
+        res.status(StatusCode.OK).send(response);
+      } catch (error: any) {
+        next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+      }
+    }
+  );
+  
+  

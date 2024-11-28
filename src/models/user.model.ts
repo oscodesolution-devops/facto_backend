@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     },
     phoneNumber: {
       type: Number,
+      unique: true,
       
       validate: {
         validator: function (v: number) {
