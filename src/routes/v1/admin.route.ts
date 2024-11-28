@@ -188,7 +188,7 @@ router.patch(
 
 router
   .route("/blogs")
-  .post(verifyToken, isAdmin, controllers.adminController.createBlog);
+  .post(verifyToken, isAdmin, processCourseMaterialsUpload,controllers.adminController.createBlog);
 router
   .route("/blogs")
   .get(verifyToken, isAdmin, controllers.adminController.ListBlogs);
