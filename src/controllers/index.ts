@@ -9,6 +9,7 @@ import * as userDocumentController from "@/controllers/userDocument.controller"
 import * as courseController from "@/controllers/course.controller"
 import * as blogController from "@/controllers/blog.controller"
 import * as queryController from "@/controllers/query.controller"
+import * as requestController from "@/controllers/request.controller"
 export const controllers = {
     authController,
     userController,
@@ -21,4 +22,5 @@ export const controllers = {
     courseController,
     blogController,
     queryController,
+    requestController,
 }

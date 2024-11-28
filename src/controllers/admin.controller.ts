@@ -1322,3 +1322,15 @@ export const addCommentToQuery = bigPromise(
     }
   }
 );
+
+export const getRequest = bigPromise(
+  async(req:Request,res:Response,next:NextFunction)=>{
+    try{
+      const requests = await db.Request.find().sort({createdAt: -1});
+      const response = sendSuccessApiResponse("Requests fetched successfully",{requests});
+      res.status(StatusCode.OK).send(response);
+    }catch(error){
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+)

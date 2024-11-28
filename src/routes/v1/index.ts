@@ -9,6 +9,7 @@ import userDocumentRoute from "./userDocument.route";
 import courseRoute from "./courses.route"
 import blogRoute from "./blog.route"
 import queryRoute from "./query.route"
+import requestRoute from "./request.route"
 const router: Router = express.Router();
 
 router.use("/auth", authRoute);
@@ -21,7 +22,7 @@ router.use("/document",userDocumentRoute);
 router.use("/course",courseRoute);
 router.use("/blogs",blogRoute);
 router.use("/query", queryRoute);
-
+router.use("/request", requestRoute);
 router.get("/", (req: Request, res: Response) => {
   return res.status(200).send({
     uptime: process.uptime(),

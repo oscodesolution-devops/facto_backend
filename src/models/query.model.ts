@@ -48,7 +48,6 @@ const QuerySchema = new mongoose.Schema<IQuery, QueryModel>(
   },
   {
     timestamps: true,
-    collection: "users",
   }
 );
 

@@ -188,7 +188,12 @@ router.patch(
 
 router
   .route("/blogs")
-  .post(verifyToken, isAdmin, processCourseMaterialsUpload,controllers.adminController.createBlog);
+  .post(
+    verifyToken,
+    isAdmin,
+    processCourseMaterialsUpload,
+    controllers.adminController.createBlog
+  );
 router
   .route("/blogs")
   .get(verifyToken, isAdmin, controllers.adminController.ListBlogs);
@@ -199,14 +204,22 @@ router
 
 router
   .route("/query")
-  .post(verifyToken,isAdmin,controllers.queryController.addQuery);
+  .post(verifyToken, isAdmin, controllers.queryController.addQuery);
 
 router
   .route("/query")
-  .get(verifyToken,isAdmin,controllers.adminController.getQuery);
+  .get(verifyToken, isAdmin, controllers.adminController.getQuery);
 
-  router
+router
   .route("/query/:id")
-  .put(verifyToken,isAdmin,controllers.adminController.addCommentToQuery);
+  .put(verifyToken, isAdmin, controllers.adminController.addCommentToQuery);
+
+router
+  .route("/request")
+  .get(verifyToken,isAdmin,controllers.adminController.getRequest);
+
+router
+  .route("/request")
+  .post(verifyToken,isAdmin,controllers.requestController.addRequest);
 
 export default router;
