@@ -3,7 +3,12 @@ const router = express.Router();
 
 import { controllers } from "../../controllers";
 import { isAdmin, verifyToken } from "@/middlewares/auth";
-import { deleteCourseThumbnail, handleMulterError, processCourseThumbnailUpload, processCourseVideoUpload, uploadCourseThumbnail, uploadCourseVideo, uploadIcon } from "@/middlewares/upload";
+import {
+  handleMulterError,
+  processCourseMaterialsUpload,
+  uploadCourseMaterials,
+  uploadIcon,
+} from "@/middlewares/upload";
 
 router.post("/create", controllers.adminController.addAdmin);
 router.post("/login", controllers.adminController.login);
@@ -161,41 +166,18 @@ router.get(
   controllers.adminController.toggleSubServiceRequirementMandatory
 );
 
-router.post("/courses", verifyToken,isAdmin , controllers.adminController.addCourse);
+router.post(
+  "/courses",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.addCourse
+);
 router.post(
   "/courses/:courseId/lectures",
   verifyToken,
   isAdmin,
-  (req, res, next) => {
-    // Use a combined middleware to handle both thumbnail and video uploads
-    uploadCourseThumbnail(req, res, (thumbnailError) => {
-      if (thumbnailError) {
-        return handleMulterError(thumbnailError, req, res, next);
-      }
-      
-      uploadCourseVideo(req, res, (videoError) => {
-        if (videoError) {
-          // If video upload fails, delete the already uploaded thumbnail if exists
-          if (req.file) {
-            deleteCourseThumbnail(req.file.path);
-          }
-          return handleMulterError(videoError, req, res, next);
-        }
-        
-        // Add uploaded file paths to request body
-        if (req.file) {
-          if (req.file.fieldname === 'thumbnail') {
-            req.body.thumbnailUrl = req.file.path;
-          } else if (req.file.fieldname === 'video') {
-            req.body.videoUrl = req.file.path;
-          }
-        }
-        
-        next();
-      });
-    });
-  },
-  controllers.adminController.addLecture,
+  processCourseMaterialsUpload,
+  controllers.adminController.addLecture
 );
 router.patch(
   "/courses/:courseId/publish",
@@ -203,5 +185,16 @@ router.patch(
   isAdmin,
   controllers.adminController.publishCourse
 );
+
+router
+  .route("/blogs")
+  .post(verifyToken, isAdmin, controllers.adminController.createBlog);
+router
+  .route("/blogs")
+  .get(verifyToken, isAdmin, controllers.adminController.ListBlogs);
+
+router
+  .route("/blogs/:id")
+  .delete(verifyToken, isAdmin, controllers.adminController.deleteBlog);
 
 export default router;

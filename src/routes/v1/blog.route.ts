@@ -4,7 +4,7 @@ const router = express.Router();
 // import controllers
 import { controllers } from "../../controllers";
 
-router.route("/").get(controllers.courseController.getCourses);
-router.route("/:courseId/lectures").get(controllers.courseController.getCourseById);
+router.route("/").get(controllers.blogController.getBlogs);
+router.route("/:id").get(controllers.blogController.getBlogById);
 
 export default router;

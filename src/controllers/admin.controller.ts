@@ -10,7 +10,7 @@ import { ICourse, ILecture, IService, IUser } from "@/interfaces";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { INotification } from "@/interfaces/notificationInterface";
-import { deleteCloudinaryImage } from "@/middlewares/upload";
+import { deleteCloudinaryImage, deleteUploadedFiles, processCourseMaterialsUpload } from "@/middlewares/upload";
 export const getAllUsers = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -1022,11 +1022,20 @@ export const addCourse = bigPromise(
 
 export const addLecture = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
+    let thumbnailUrl, videoUrl;
     try {
-
+      try {
+        req.body.duration = JSON.parse(req.body.duration);
+        console.log(req.body.duration)
+      } catch (parseError) {
+        console.error('Error parsing duration:', parseError);
+        return res.status(400).json({ 
+          message: 'Invalid duration format' 
+        });
+      }
       const { courseId } = req.params;
       const { title, subtitle, lectureNumber, language, subtitleLanguage, duration, courseLevel, isFree }: ILecture = req.body;
-      console.log(courseId)
+      // console.log(req.body)
       // Validate required fields
       if (!title || !lectureNumber || !language  || !courseLevel ) {
         return next(
@@ -1049,8 +1058,8 @@ export const addLecture = bigPromise(
       }
 
     
-      const thumbnailUrl = req.body.thumbnailUrl;
-      const videoUrl = req.body.videoUrl;
+      thumbnailUrl = req.body.thumbnailUrl;
+      videoUrl = req.body.videoUrl;
 
       if (!thumbnailUrl || !videoUrl) {
         return next(
@@ -1060,6 +1069,8 @@ export const addLecture = bigPromise(
           )
         );
       }
+
+      
 
       
       const lecture = await db.Lecture.create({
@@ -1085,6 +1096,7 @@ export const addLecture = bigPromise(
       });
       res.status(StatusCode.CREATED).send(response);
     } catch (error: any) {
+      await deleteUploadedFiles(thumbnailUrl,videoUrl);
       if (error.name === "ValidationError") {
         console.log(error)
         return next(createCustomError(error.message, StatusCode.BAD_REQ));
@@ -1129,6 +1141,157 @@ export const publishCourse = bigPromise(
       });
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const createBlog = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Use the course materials upload middleware to handle image upload
+      await new Promise((resolve, reject) => {
+        processCourseMaterialsUpload(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(null);
+        });
+      });
+
+      const { 
+        title, 
+        content, 
+        thumbnailUrl, // This will be populated by processCourseMaterialsUpload
+        reference, 
+        tags, 
+
+      } = req.body;
+
+      // Validate required fields
+      if (!title || !content || !thumbnailUrl || !reference) {
+        // Clean up any uploaded file if validation fails
+        if (thumbnailUrl) {
+          await deleteUploadedFiles(thumbnailUrl);
+        }
+
+        return next(
+          createCustomError(
+            "Title, content, image URL, and reference are required", 
+            StatusCode.BAD_REQ
+          )
+        );
+      }
+
+      // Create blog
+      const blog = await db.Blog.create({
+        title,
+        content,
+        imageUrl: thumbnailUrl, // Use the uploaded thumbnail URL
+        reference,
+        tags: tags || [],
+      });
+
+      const response = sendSuccessApiResponse(
+        "Blog created successfully", 
+        { blog }
+      );
+      res.status(StatusCode.CREATED).send(response);
+    } catch (error) {
+      // Clean up any uploaded files in case of error
+      if (req.body.thumbnailUrl) {
+        await deleteUploadedFiles(req.body.thumbnailUrl);
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+
+export const ListBlogs = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { 
+        search = '', 
+        fromDate, 
+        toDate, 
+        page = 1, 
+        limit = 10 
+      } = req.query;
+
+      // Build filter
+      const filter: any = {};
+      
+      // Text search on title
+      if (search) {
+        filter.$or = [
+          { title: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      // Date range filtering
+      if (fromDate && toDate) {
+        filter.createdAt = {
+          $gte: new Date(fromDate as string),
+          $lte: new Date(toDate as string)
+        };
+      }
+
+      // Pagination
+      const options = {
+        select: 'title content createdAt imageUrl tags',
+        sort: { createdAt: -1 },
+        limit: Number(limit),
+        skip: (Number(page) - 1) * Number(limit)
+      };
+
+      // Fetch blogs
+      const blogs = await db.Blog.find(filter, null, options);
+      const total = await db.Blog.countDocuments(filter);
+
+      const response = sendSuccessApiResponse(
+        "Blogs retrieved successfully", 
+        { 
+          blogs, 
+          pagination: {
+            currentPage: Number(page),
+            totalPages: Math.ceil(total / Number(limit)),
+            totalBlogs: total
+          }
+        }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const deleteBlog = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      // Validate ID
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(
+          createCustomError("Invalid blog ID", StatusCode.BAD_REQ)
+        );
+      }
+
+      // Delete blog
+      const deletedBlog = await db.Blog.findByIdAndDelete(id);
+
+      if (!deletedBlog) {
+        return next(
+          createCustomError("Blog not found", StatusCode.NOT_FOUND)
+        );
+      }
+
+      const response = sendSuccessApiResponse(
+        "Blog deleted successfully", 
+        { deletedBlog }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }
