@@ -197,4 +197,16 @@ router
   .route("/blogs/:id")
   .delete(verifyToken, isAdmin, controllers.adminController.deleteBlog);
 
+router
+  .route("/query")
+  .post(verifyToken,isAdmin,controllers.queryController.addQuery);
+
+router
+  .route("/query")
+  .get(verifyToken,isAdmin,controllers.adminController.getQuery);
+
+  router
+  .route("/query/:id")
+  .put(verifyToken,isAdmin,controllers.adminController.addCommentToQuery);
+
 export default router;

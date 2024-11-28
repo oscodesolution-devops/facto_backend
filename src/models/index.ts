@@ -7,6 +7,7 @@ import UserDocument from "@/models/userDocument.model";
 import Lecture from "@/models/lecture.model";
 import Course from "@/models/course.model";
 import Blog from "@/models/blog.model";
+import Query from "@/models/query.model";
 
 export const db = {
   User,
@@ -17,5 +18,6 @@ export const db = {
   UserDocument,
   Lecture,
   Course,
-  Blog
+  Blog,
+  Query,
 };

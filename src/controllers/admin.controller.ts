@@ -10,7 +10,11 @@ import { ICourse, ILecture, IService, IUser } from "@/interfaces";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { INotification } from "@/interfaces/notificationInterface";
-import { deleteCloudinaryImage, deleteUploadedFiles, processCourseMaterialsUpload } from "@/middlewares/upload";
+import {
+  deleteCloudinaryImage,
+  deleteUploadedFiles,
+  processCourseMaterialsUpload,
+} from "@/middlewares/upload";
 export const getAllUsers = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -786,7 +790,6 @@ export const createSubServiceRequirement = bigPromise(
 
 // Get all SubServiceRequirements for a specific SubService
 
-
 // Get a single SubServiceRequirement by ID
 export const getSubServiceRequirementById = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -831,12 +834,10 @@ export const getSubServiceRequirementById = bigPromise(
 export const updateSubServiceRequirement = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {  requirementId } = req.params;
+      const { requirementId } = req.params;
       const updateData = req.body;
 
-      if (
-        !mongoose.Types.ObjectId.isValid(requirementId)
-      ) {
+      if (!mongoose.Types.ObjectId.isValid(requirementId)) {
         return next(
           createCustomError("Invalid ID provided", StatusCode.BAD_REQ)
         );
@@ -885,11 +886,9 @@ export const updateSubServiceRequirement = bigPromise(
 export const deleteSubServiceRequirement = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {  requirementId } = req.params;
+      const { requirementId } = req.params;
 
-      if (
-        !mongoose.Types.ObjectId.isValid(requirementId)
-      ) {
+      if (!mongoose.Types.ObjectId.isValid(requirementId)) {
         return next(
           createCustomError("Invalid ID provided", StatusCode.BAD_REQ)
         );
@@ -897,7 +896,7 @@ export const deleteSubServiceRequirement = bigPromise(
 
       const subServiceRequirement =
         await db.SubServiceRequirement.findOneAndDelete({
-          _id: requirementId
+          _id: requirementId,
         });
 
       if (!subServiceRequirement) {
@@ -924,11 +923,9 @@ export const deleteSubServiceRequirement = bigPromise(
 export const toggleSubServiceRequirementMandatory = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {  requirementId } = req.params;
+      const { requirementId } = req.params;
 
-      if (
-        !mongoose.Types.ObjectId.isValid(requirementId)
-      ) {
+      if (!mongoose.Types.ObjectId.isValid(requirementId)) {
         return next(
           createCustomError("Invalid ID provided", StatusCode.BAD_REQ)
         );
@@ -936,7 +933,6 @@ export const toggleSubServiceRequirementMandatory = bigPromise(
 
       const subServiceRequirement = await db.SubServiceRequirement.findOne({
         _id: requirementId,
- 
       });
 
       if (!subServiceRequirement) {
@@ -965,19 +961,32 @@ export const toggleSubServiceRequirementMandatory = bigPromise(
   }
 );
 
-
 export const addCourse = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { title, category, language, subtitleLanguage, duration, price, description,totalLectures }: ICourse = req.body;
+      const {
+        title,
+        category,
+        language,
+        subtitleLanguage,
+        duration,
+        price,
+        description,
+        totalLectures,
+      }: ICourse = req.body;
 
       // Validate required fields
-      if (!title || !category || !language || !duration || !price || !description || !totalLectures ) {
+      if (
+        !title ||
+        !category ||
+        !language ||
+        !duration ||
+        !price ||
+        !description ||
+        !totalLectures
+      ) {
         return next(
-          createCustomError(
-            "All fields are required",
-            StatusCode.BAD_REQ
-          )
+          createCustomError("All fields are required", StatusCode.BAD_REQ)
         );
       }
 
@@ -1003,7 +1012,7 @@ export const addCourse = bigPromise(
         description,
         totalLectures,
         lectures: [],
-        status: "draft"
+        status: "draft",
       });
 
       const response = sendSuccessApiResponse("Course created successfully", {
@@ -1019,45 +1028,45 @@ export const addCourse = bigPromise(
   }
 );
 
-
 export const addLecture = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     let thumbnailUrl, videoUrl;
     try {
       try {
         req.body.duration = JSON.parse(req.body.duration);
-        console.log(req.body.duration)
+        console.log(req.body.duration);
       } catch (parseError) {
-        console.error('Error parsing duration:', parseError);
-        return res.status(400).json({ 
-          message: 'Invalid duration format' 
+        console.error("Error parsing duration:", parseError);
+        return res.status(400).json({
+          message: "Invalid duration format",
         });
       }
       const { courseId } = req.params;
-      const { title, subtitle, lectureNumber, language, subtitleLanguage, duration, courseLevel, isFree }: ILecture = req.body;
+      const {
+        title,
+        subtitle,
+        lectureNumber,
+        language,
+        subtitleLanguage,
+        duration,
+        courseLevel,
+        isFree,
+      }: ILecture = req.body;
       // console.log(req.body)
       // Validate required fields
-      if (!title || !lectureNumber || !language  || !courseLevel ) {
+      if (!title || !lectureNumber || !language || !courseLevel) {
         return next(
-          createCustomError(
-            "All fields are required",
-            StatusCode.BAD_REQ
-          )
+          createCustomError("All fields are required", StatusCode.BAD_REQ)
         );
       }
 
-      
       const course = await db.Course.findById(courseId);
       if (!course) {
         return next(
-          createCustomError(
-            "Course not found",
-            StatusCode.NOT_FOUND
-          )
+          createCustomError("Course not found", StatusCode.NOT_FOUND)
         );
       }
 
-    
       thumbnailUrl = req.body.thumbnailUrl;
       videoUrl = req.body.videoUrl;
 
@@ -1070,9 +1079,6 @@ export const addLecture = bigPromise(
         );
       }
 
-      
-
-      
       const lecture = await db.Lecture.create({
         title,
         subtitle,
@@ -1086,7 +1092,6 @@ export const addLecture = bigPromise(
         isFree,
       });
 
-      
       course.lectures.push(lecture._id);
       course.totalLectures = course.lectures.length;
       await course.save();
@@ -1096,9 +1101,9 @@ export const addLecture = bigPromise(
       });
       res.status(StatusCode.CREATED).send(response);
     } catch (error: any) {
-      await deleteUploadedFiles(thumbnailUrl,videoUrl);
+      await deleteUploadedFiles(thumbnailUrl, videoUrl);
       if (error.name === "ValidationError") {
-        console.log(error)
+        console.log(error);
         return next(createCustomError(error.message, StatusCode.BAD_REQ));
       }
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
@@ -1115,10 +1120,7 @@ export const publishCourse = bigPromise(
       const course = await db.Course.findById(courseId);
       if (!course) {
         return next(
-          createCustomError(
-            "Course not found",
-            StatusCode.NOT_FOUND
-          )
+          createCustomError("Course not found", StatusCode.NOT_FOUND)
         );
       }
 
@@ -1157,13 +1159,12 @@ export const createBlog = bigPromise(
         });
       });
 
-      const { 
-        title, 
-        content, 
+      const {
+        title,
+        content,
         thumbnailUrl, // This will be populated by processCourseMaterialsUpload
-        reference, 
-        tags, 
-
+        reference,
+        tags,
       } = req.body;
 
       // Validate required fields
@@ -1175,7 +1176,7 @@ export const createBlog = bigPromise(
 
         return next(
           createCustomError(
-            "Title, content, image URL, and reference are required", 
+            "Title, content, image URL, and reference are required",
             StatusCode.BAD_REQ
           )
         );
@@ -1190,10 +1191,9 @@ export const createBlog = bigPromise(
         tags: tags || [],
       });
 
-      const response = sendSuccessApiResponse(
-        "Blog created successfully", 
-        { blog }
-      );
+      const response = sendSuccessApiResponse("Blog created successfully", {
+        blog,
+      });
       res.status(StatusCode.CREATED).send(response);
     } catch (error) {
       // Clean up any uploaded files in case of error
@@ -1205,59 +1205,47 @@ export const createBlog = bigPromise(
   }
 );
 
-
 export const ListBlogs = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { 
-        search = '', 
-        fromDate, 
-        toDate, 
-        page = 1, 
-        limit = 10 
-      } = req.query;
+      const { search = "", fromDate, toDate, page = 1, limit = 10 } = req.query;
 
       // Build filter
       const filter: any = {};
-      
+
       // Text search on title
       if (search) {
-        filter.$or = [
-          { title: { $regex: search, $options: 'i' } }
-        ];
+        filter.$or = [{ title: { $regex: search, $options: "i" } }];
       }
 
       // Date range filtering
       if (fromDate && toDate) {
         filter.createdAt = {
           $gte: new Date(fromDate as string),
-          $lte: new Date(toDate as string)
+          $lte: new Date(toDate as string),
         };
       }
 
       // Pagination
       const options = {
-        select: 'title content createdAt imageUrl tags',
+        select: "title content createdAt imageUrl tags",
         sort: { createdAt: -1 },
         limit: Number(limit),
-        skip: (Number(page) - 1) * Number(limit)
+        skip: (Number(page) - 1) * Number(limit),
       };
 
       // Fetch blogs
       const blogs = await db.Blog.find(filter, null, options);
       const total = await db.Blog.countDocuments(filter);
 
-      const response = sendSuccessApiResponse(
-        "Blogs retrieved successfully", 
-        { 
-          blogs, 
-          pagination: {
-            currentPage: Number(page),
-            totalPages: Math.ceil(total / Number(limit)),
-            totalBlogs: total
-          }
-        }
-      );
+      const response = sendSuccessApiResponse("Blogs retrieved successfully", {
+        blogs,
+        pagination: {
+          currentPage: Number(page),
+          totalPages: Math.ceil(total / Number(limit)),
+          totalBlogs: total,
+        },
+      });
       res.status(StatusCode.OK).send(response);
     } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
@@ -1272,23 +1260,61 @@ export const deleteBlog = bigPromise(
 
       // Validate ID
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return next(
-          createCustomError("Invalid blog ID", StatusCode.BAD_REQ)
-        );
+        return next(createCustomError("Invalid blog ID", StatusCode.BAD_REQ));
       }
 
       // Delete blog
       const deletedBlog = await db.Blog.findByIdAndDelete(id);
 
       if (!deletedBlog) {
-        return next(
-          createCustomError("Blog not found", StatusCode.NOT_FOUND)
-        );
+        return next(createCustomError("Blog not found", StatusCode.NOT_FOUND));
       }
 
+      const response = sendSuccessApiResponse("Blog deleted successfully", {
+        deletedBlog,
+      });
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const getQuery = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const queries = await db.Query.find().sort({ createdAt: -1 });
       const response = sendSuccessApiResponse(
-        "Blog deleted successfully", 
-        { deletedBlog }
+        "Queries retrieved successfully",
+        { queries }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const addCommentToQuery = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const {id} = req.params;
+      const {comment} = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(createCustomError("Invalid query ID", StatusCode.BAD_REQ));
+      }
+      if(!comment){
+        return next(createCustomError("Comment is required", StatusCode.BAD_REQ));
+      }
+
+      const query = await db.Query.findById(id);
+
+      query.comment = comment;
+      await query.save();
+      const response = sendSuccessApiResponse(
+        "Comment added to the query successfully",
+        { query }
       );
       res.status(StatusCode.OK).send(response);
     } catch (error) {
