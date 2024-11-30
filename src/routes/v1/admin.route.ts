@@ -190,6 +190,20 @@ router.post(
   isAdmin,
   controllers.adminController.addCourse
 );
+
+router.get(
+  "/courses",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getCourses
+);
+router.get(
+  "/courses/:id",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getCourseById
+);
+
 router.post(
   "/courses/:courseId/lectures",
   verifyToken,
@@ -197,12 +211,32 @@ router.post(
   processCourseMaterialsUpload,
   controllers.adminController.addLecture
 );
+router.get(
+  "/courses/:courseId/lectures",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getLecture
+);
+router.put(
+  "/courses/:courseId/lectures/:lectureId",
+  verifyToken,
+  isAdmin,
+  processCourseMaterialsUpload,
+  controllers.adminController.updateLecture
+);
 router.patch(
   "/courses/:courseId/publish",
   verifyToken,
   isAdmin,
   controllers.adminController.publishCourse
 );
+
+router.put(
+  "/courses/:courseId",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.updateCourse
+)
 
 router
   .route("/blogs")

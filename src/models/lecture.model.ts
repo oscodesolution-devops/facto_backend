@@ -42,7 +42,7 @@ const LectureSchema = new mongoose.Schema<ILecture,LectureModel>({
     courseLevel: {
       type: String,
       required: true,
-      enum: ['Beginner', 'Intermediate', 'Advanced']
+      enum: ['beginner', 'intermediate', 'advanced']
     },
     isFree: {
         type: Boolean,

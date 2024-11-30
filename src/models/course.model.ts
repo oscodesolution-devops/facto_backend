@@ -24,7 +24,7 @@ const CourseSchema = new mongoose.Schema<ICourse,CourseModel>(
       },
       unit: {
         type: String,
-        enum: ["minutes", "hours", "days"],
+        enum: ["minutes", "hours", "days","weeks"],
         default: "minutes",
       },
     },

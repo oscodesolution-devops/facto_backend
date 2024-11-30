@@ -1064,6 +1064,120 @@ export const addCourse = bigPromise(
   }
 );
 
+export const updateCourse = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { courseId } = req.params; // Assuming course ID is passed as a parameter
+      const {
+        title,
+        category,
+        language,
+        subtitleLanguage,
+        duration,
+        price,
+        description,
+        totalLectures,
+      }: Partial<ICourse> = req.body;
+
+      // Check if the course exists
+      const existingCourse = await db.Course.findById(courseId);
+      if (!existingCourse) {
+        return next(
+          createCustomError("Course not found", StatusCode.NOT_FOUND)
+        );
+      }
+
+      // Validate fields if provided
+      if (title) {
+        const duplicateTitle = await db.Course.findOne({ title, _id: { $ne: courseId } });
+        if (duplicateTitle) {
+          return next(
+            createCustomError(
+              "Another course with this title already exists",
+              StatusCode.BAD_REQ
+            )
+          );
+        }
+      }
+
+      // Update course fields
+      const updatedFields = {
+        ...(title && { title }),
+        ...(category && { category }),
+        ...(language && { language }),
+        ...(subtitleLanguage && { subtitleLanguage }),
+        ...(duration && { duration }),
+        ...(price && { price }),
+        ...(description && { description }),
+        ...(totalLectures && { totalLectures }),
+      };
+
+      const updatedCourse = await db.Course.findByIdAndUpdate(
+        courseId,
+        { $set: updatedFields },
+        { new: true, runValidators: true }
+      );
+
+      const response = sendSuccessApiResponse(
+        "Course updated successfully",
+        { course: updatedCourse }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        return next(createCustomError(error.message, StatusCode.BAD_REQ));
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const getCourses = bigPromise(
+  async(req:Request,res:Response,next:NextFunction) =>{
+    try{
+      const courses = await db.Course.find()
+      const response = sendSuccessApiResponse(
+        "Courses Fetched Successfully",
+        courses
+      );
+      res.status(StatusCode.OK).send(response);
+    }catch(error){
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+)
+export const getCourseById = bigPromise(
+  async(req:Request,res:Response,next:NextFunction) =>{
+    try{
+      const {id} = req.params;
+      const course = await db.Course.findById(id).populate("lectures");
+      const response = sendSuccessApiResponse(
+        "Course Fetched Successfully",
+        course
+      );
+      res.status(StatusCode.OK).send(response);
+    }catch(error){
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+)
+export const getLecture = bigPromise(
+  async(req:Request,res:Response,next:NextFunction)=>{
+    try{
+      const {courseId} = req.params;
+      const courses = await db.Course.findById(courseId).populate("lectures");
+      const response = sendSuccessApiResponse(
+        "Course Fetched Successfully",
+        {lectures:courses.lectures}
+      );
+      res.status(StatusCode.OK).send(response);
+
+    }catch(error){
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+)
+
 export const addLecture = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     let thumbnailUrl, videoUrl;
@@ -1146,6 +1260,94 @@ export const addLecture = bigPromise(
     }
   }
 );
+export const updateLecture = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    let updatedThumbnailUrl, updatedVideoUrl;
+    try {
+      
+      const { courseId, lectureId } = req.params;
+      const {
+        title,
+        subtitle,
+        lectureNumber,
+        language,
+        subtitleLanguage,
+        duration,
+        courseLevel,
+        isFree,
+      }: Partial<ILecture> = req.body;
+
+      // Check if the course exists
+      const course = await db.Course.findById(courseId);
+      if (!course) {
+        return next(createCustomError("Course not found", StatusCode.NOT_FOUND));
+      }
+
+      // Check if the lecture exists in the course
+      const lecture = await db.Lecture.findById(lectureId);
+      if (!lecture) {
+        return next(createCustomError("Lecture not found", StatusCode.NOT_FOUND));
+      }
+
+      // Handle file uploads
+      updatedThumbnailUrl = req.body.thumbnailUrl || lecture.thumbnail;
+      updatedVideoUrl = req.body.videoUrl || lecture.videoUrl;
+
+      if (req.file) {
+        if (req.file.fieldname === "thumbnail") {
+          updatedThumbnailUrl = req.file.path;
+        }
+        if (req.file.fieldname === "video") {
+          updatedVideoUrl = req.file.path;
+        }
+      }
+
+      // Parse duration if provided
+      if (req.body.duration) {
+        try {
+          req.body.duration = JSON.parse(req.body.duration);
+          req.body.duration.value = Number(req.body.duration.value);
+          console.log(req.body.duration);
+        } catch (parseError) {
+          console.error("Error parsing duration:", parseError);
+          return res.status(400).json({
+            message: "Invalid duration format",
+          });
+        }
+      }
+
+      // Update lecture fields
+      lecture.title = title || lecture.title;
+      lecture.subtitle = subtitle || lecture.subtitle;
+      lecture.lectureNumber = lectureNumber || lecture.lectureNumber;
+      lecture.language = language || lecture.language;
+      lecture.subtitleLanguage = subtitleLanguage || lecture.subtitleLanguage;
+      lecture.duration = req.body.duration || lecture.duration;
+      lecture.courseLevel = courseLevel || lecture.courseLevel;
+      lecture.thumbnail = updatedThumbnailUrl;
+      lecture.videoUrl = updatedVideoUrl;
+      lecture.isFree = isFree !== undefined ? isFree : lecture.isFree;
+
+      // Save the updated lecture
+      await lecture.save();
+
+      const response = sendSuccessApiResponse("Lecture updated successfully", {
+        lecture,
+      });
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      // Clean up uploaded files in case of error
+      if (req.file) {
+        await deleteUploadedFiles(updatedThumbnailUrl, updatedVideoUrl);
+      }
+      if (error.name === "ValidationError") {
+        console.error(error);
+        return next(createCustomError(error.message, StatusCode.BAD_REQ));
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
 
 export const publishCourse = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -1187,8 +1389,6 @@ export const publishCourse = bigPromise(
 export const createBlog = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Use the course materials upload middleware to handle image upload
-      // console.log("first")
       const {
         title,
         content,
@@ -1196,10 +1396,22 @@ export const createBlog = bigPromise(
         reference,
         tags,
       } = req.body;
-      // console.log(req.body)
+
+      console.log(req.body);
+
+      // Parse reference if it's a string
+      const parsedReference =
+        typeof reference === "string" ? JSON.parse(reference) : reference;
 
       // Validate required fields
-      if (!title || !content || !thumbnailUrl || !reference) {
+      if (
+        !title ||
+        !content ||
+        !thumbnailUrl ||
+        !parsedReference ||
+        !parsedReference.title ||
+        !parsedReference.url
+      ) {
         // Clean up any uploaded file if validation fails
         if (thumbnailUrl) {
           await deleteUploadedFiles(thumbnailUrl);
@@ -1207,7 +1419,7 @@ export const createBlog = bigPromise(
 
         return next(
           createCustomError(
-            "Title, content, image URL, and reference are required",
+            "Title, content, image URL, and valid reference are required",
             StatusCode.BAD_REQ
           )
         );
@@ -1218,8 +1430,11 @@ export const createBlog = bigPromise(
         title,
         content,
         imageUrl: thumbnailUrl, // Use the uploaded thumbnail URL
-        reference,
-        tags: tags || [],
+        reference: {
+          title: parsedReference.title,
+          url: parsedReference.url,
+        },
+        tags: tags ? JSON.parse(tags) : [],
       });
 
       const response = sendSuccessApiResponse("Blog created successfully", {
@@ -1235,6 +1450,7 @@ export const createBlog = bigPromise(
     }
   }
 );
+
 
 export const ListBlogs = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
