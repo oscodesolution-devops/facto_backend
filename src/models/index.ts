@@ -9,6 +9,9 @@ import Course from "@/models/course.model";
 import Blog from "@/models/blog.model";
 import Query from "@/models/query.model";
 import Request from "@/models/request.model";
+import PaymentOrder from "@/models/paymentOrder.model";
+import UserPurchase from "@/models/userPurchase.model";
+import Quotation from "@/models/quotations.model";
 
 export const db = {
   User,
@@ -22,4 +25,7 @@ export const db = {
   Blog,
   Query,
   Request,
+  PaymentOrder,
+  UserPurchase,
+  Quotation,
 };

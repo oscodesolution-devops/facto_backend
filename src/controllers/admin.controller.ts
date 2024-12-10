@@ -44,11 +44,11 @@ export const addUser = bigPromise(
 export const addEmployee = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {email} = req.body;
+      const { email } = req.body;
       // Use the existing signup controller
       await signup(req, res, next);
-      const employee = await db.User.findOne({email})
-      employee.role = 'employee'
+      const employee = await db.User.findOne({ email });
+      employee.role = "employee";
 
       await employee.save();
 
@@ -65,11 +65,16 @@ export const addEmployee = bigPromise(
 export const getEmployee = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const employees = await db.User.find({ role: "employee" }).select("-password");
+      const employees = await db.User.find({ role: "employee" }).select(
+        "-password"
+      );
 
-      const response = sendSuccessApiResponse("Employees retrieved successfully", {
-        employees,
-      });
+      const response = sendSuccessApiResponse(
+        "Employees retrieved successfully",
+        {
+          employees,
+        }
+      );
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
@@ -415,10 +420,10 @@ export const editNotification = bigPromise(
 export const addService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { title, description }: IService = req.body;
+      const { title, description, category }: IService = req.body;
 
       // Validate required fields
-      if (!title || !description) {
+      if (!title || !description || !category) {
         return next(
           createCustomError(
             "Title and description are required",
@@ -445,6 +450,7 @@ export const addService = bigPromise(
       const service = await db.Service.create({
         title,
         description,
+        category,
         isActive: true,
         icon: iconUrl,
       });
@@ -502,7 +508,8 @@ export const updateService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { serviceId } = req.params;
-      const { title, description, isActive }: Partial<IService> = req.body;
+      const { title, description, isActive, category }: Partial<IService> =
+        req.body;
 
       if (!mongoose.Types.ObjectId.isValid(serviceId)) {
         return next(
@@ -547,7 +554,7 @@ export const updateService = bigPromise(
       if (title) service.title = title;
       if (description) service.description = description;
       if (typeof isActive === "boolean") service.isActive = isActive;
-
+      if (category) service.category = category;
       await service.save();
 
       const response = sendSuccessApiResponse("Service updated successfully", {
@@ -649,7 +656,8 @@ export const createSubService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { serviceId } = req.params;
-      const { title, description, features, price, period } = req.body;
+      const { title, description, features, price, period, requests } =
+        req.body;
 
       if (!mongoose.Types.ObjectId.isValid(serviceId)) {
         return next(
@@ -661,6 +669,7 @@ export const createSubService = bigPromise(
         serviceId,
         title,
         description,
+        requests,
         features,
         price,
         period,
@@ -1089,7 +1098,10 @@ export const updateCourse = bigPromise(
 
       // Validate fields if provided
       if (title) {
-        const duplicateTitle = await db.Course.findOne({ title, _id: { $ne: courseId } });
+        const duplicateTitle = await db.Course.findOne({
+          title,
+          _id: { $ne: courseId },
+        });
         if (duplicateTitle) {
           return next(
             createCustomError(
@@ -1118,10 +1130,9 @@ export const updateCourse = bigPromise(
         { new: true, runValidators: true }
       );
 
-      const response = sendSuccessApiResponse(
-        "Course updated successfully",
-        { course: updatedCourse }
-      );
+      const response = sendSuccessApiResponse("Course updated successfully", {
+        course: updatedCourse,
+      });
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
       if (error.name === "ValidationError") {
@@ -1133,50 +1144,48 @@ export const updateCourse = bigPromise(
 );
 
 export const getCourses = bigPromise(
-  async(req:Request,res:Response,next:NextFunction) =>{
-    try{
-      const courses = await db.Course.find()
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const courses = await db.Course.find();
       const response = sendSuccessApiResponse(
         "Courses Fetched Successfully",
         courses
       );
       res.status(StatusCode.OK).send(response);
-    }catch(error){
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }
-)
+);
 export const getCourseById = bigPromise(
-  async(req:Request,res:Response,next:NextFunction) =>{
-    try{
-      const {id} = req.params;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
       const course = await db.Course.findById(id).populate("lectures");
       const response = sendSuccessApiResponse(
         "Course Fetched Successfully",
         course
       );
       res.status(StatusCode.OK).send(response);
-    }catch(error){
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }
-)
+);
 export const getLecture = bigPromise(
-  async(req:Request,res:Response,next:NextFunction)=>{
-    try{
-      const {courseId} = req.params;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { courseId } = req.params;
       const courses = await db.Course.findById(courseId).populate("lectures");
-      const response = sendSuccessApiResponse(
-        "Course Fetched Successfully",
-        {lectures:courses.lectures}
-      );
+      const response = sendSuccessApiResponse("Course Fetched Successfully", {
+        lectures: courses.lectures,
+      });
       res.status(StatusCode.OK).send(response);
-
-    }catch(error){
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }
-)
+);
 
 export const addLecture = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -1264,7 +1273,6 @@ export const updateLecture = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     let updatedThumbnailUrl, updatedVideoUrl;
     try {
-      
       const { courseId, lectureId } = req.params;
       const {
         title,
@@ -1280,13 +1288,17 @@ export const updateLecture = bigPromise(
       // Check if the course exists
       const course = await db.Course.findById(courseId);
       if (!course) {
-        return next(createCustomError("Course not found", StatusCode.NOT_FOUND));
+        return next(
+          createCustomError("Course not found", StatusCode.NOT_FOUND)
+        );
       }
 
       // Check if the lecture exists in the course
       const lecture = await db.Lecture.findById(lectureId);
       if (!lecture) {
-        return next(createCustomError("Lecture not found", StatusCode.NOT_FOUND));
+        return next(
+          createCustomError("Lecture not found", StatusCode.NOT_FOUND)
+        );
       }
 
       // Handle file uploads
@@ -1451,7 +1463,6 @@ export const createBlog = bigPromise(
   }
 );
 
-
 export const ListBlogs = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -1545,14 +1556,16 @@ export const getQuery = bigPromise(
 export const addCommentToQuery = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {id} = req.params;
-      const {comment} = req.body;
+      const { id } = req.params;
+      const { comment } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return next(createCustomError("Invalid query ID", StatusCode.BAD_REQ));
       }
-      if(!comment){
-        return next(createCustomError("Comment is required", StatusCode.BAD_REQ));
+      if (!comment) {
+        return next(
+          createCustomError("Comment is required", StatusCode.BAD_REQ)
+        );
       }
 
       const query = await db.Query.findById(id);
@@ -1571,13 +1584,116 @@ export const addCommentToQuery = bigPromise(
 );
 
 export const getRequest = bigPromise(
-  async(req:Request,res:Response,next:NextFunction)=>{
-    try{
-      const requests = await db.Request.find().sort({createdAt: -1});
-      const response = sendSuccessApiResponse("Requests fetched successfully",{requests});
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const requests = await db.Request.find().sort({ createdAt: -1 });
+      const response = sendSuccessApiResponse("Requests fetched successfully", {
+        requests,
+      });
       res.status(StatusCode.OK).send(response);
-    }catch(error){
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }
-)
+);
+
+export const getAllQuotationRequests = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const {  page = 1, limit = 10 } = req.query;
+
+      const query =  {};
+      const skip = (Number(page) - 1) * Number(limit);
+
+      const totalQuotations = await db.Quotation.countDocuments(query);
+      const quotations = await db.Quotation.find(query)
+        .populate('userId', 'fullName email')
+        .populate('subServiceId', 'title')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit));
+
+      const response = sendSuccessApiResponse(
+        "Quotation requests retrieved successfully", 
+        {
+          quotations,
+          totalQuotations,
+          page: Number(page),
+          totalPages: Math.ceil(totalQuotations / Number(limit))
+        }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+
+
+export const updateQuotationPrice = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { quotationId } = req.params;
+      const { totalPrice } = req.body;
+
+      const updatedQuotation = await db.Quotation.findByIdAndUpdate(
+        quotationId,
+        {
+          price:totalPrice,
+        },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedQuotation) {
+        return next(
+          createCustomError(
+            "Quotation not found", 
+            StatusCode.NOT_FOUND
+          )
+        );
+      }
+
+      const response = sendSuccessApiResponse(
+        "Quotation updated successfully", 
+        updatedQuotation
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+export const findQuotationsByUserId = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const {userId} = req.params;
+      const {  page = 1, limit = 10 } = req.query;
+
+      const query = { userId };
+
+      const skip = (Number(page) - 1) * Number(limit);
+
+      const totalQuotations = await db.Quotation.countDocuments(query);
+      const quotations = await db.Quotation.find(query)
+        .populate('subServiceId', 'title description')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit));
+
+      const response = sendSuccessApiResponse(
+        "User quotations retrieved successfully", 
+        {
+          quotations,
+          totalQuotations,
+          page: Number(page),
+          totalPages: Math.ceil(totalQuotations / Number(limit))
+        }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);

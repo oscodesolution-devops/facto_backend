@@ -274,4 +274,17 @@ router
   .route("/request")
   .post(verifyToken,isAdmin,controllers.requestController.addRequest);
 
+router
+  .route("/quotation")
+  .get(verifyToken,isAdmin,controllers.adminController.getAllQuotationRequests);
+
+router
+  .route("/quotation/:quotationId")
+  .put(verifyToken,isAdmin,controllers.adminController.updateQuotationPrice);
+
+router
+  .route("/quotation/:userId")
+  .get(verifyToken,isAdmin,controllers.adminController.findQuotationsByUserId);
+
+
 export default router;

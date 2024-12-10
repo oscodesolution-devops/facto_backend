@@ -8,6 +8,11 @@ const ServiceSchema = new mongoose.Schema<IService, ServiceModel>(
       required: true,
       trim: true,
     },
+    category:{
+      type: String,
+      required: true,
+      trim: true,
+    },
     description: {
       type: String,
       required: true,

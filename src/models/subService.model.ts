@@ -17,6 +17,13 @@ const SubServiceSchema = new mongoose.Schema<ISubService, SubServiceModel>(
       type: String,
       required: true,
     },
+    requests: [
+      {
+        name: String,
+        priceModifier: Number,
+        needsQuotation: Boolean,
+      },
+    ],
     features: [
       {
         type: String,
@@ -44,10 +51,9 @@ const SubServiceSchema = new mongoose.Schema<ISubService, SubServiceModel>(
 );
 
 const SubService = mongoose.model<ISubService, SubServiceModel>(
-    "SubService",
-    SubServiceSchema,
-    "subService"
-  );
-  
-  export default SubService;
-  
+  "SubService",
+  SubServiceSchema,
+  "subService"
+);
+
+export default SubService;
