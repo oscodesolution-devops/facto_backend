@@ -12,6 +12,7 @@ import Request from "@/models/request.model";
 import PaymentOrder from "@/models/paymentOrder.model";
 import UserPurchase from "@/models/userPurchase.model";
 import Quotation from "@/models/quotations.model";
+import Application from "@/models/application.model";
 
 export const db = {
   User,
@@ -28,4 +29,5 @@ export const db = {
   PaymentOrder,
   UserPurchase,
   Quotation,
+  Application,
 };

@@ -96,7 +96,9 @@ export const uploadUserDocument = multer({
       "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/octet-stream"
     ];
+    // console.log(file)
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {

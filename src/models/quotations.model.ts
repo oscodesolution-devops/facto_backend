@@ -12,9 +12,7 @@ const quotationSchema = new mongoose.Schema<IQuotation, QuotationModel>({
     ref: "SubService",
     required: true,
   },
-  selectedFeatures:[{
-    name: String
-  }],
+  selectedFeatures:[String],
   price:{
     type:Number,
   }

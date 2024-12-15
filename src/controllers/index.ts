@@ -12,6 +12,7 @@ import * as queryController from "@/controllers/query.controller"
 import * as requestController from "@/controllers/request.controller"
 import * as paymentOrderController from "@/controllers/paymentOrder.controller"
 import * as quotationController from "@/controllers/quotation.controller"
+import * as applicationController from "@/controllers/application.controller"
 export const controllers = {
     authController,
     userController,
@@ -27,4 +28,5 @@ export const controllers = {
     requestController,
     paymentOrderController,
     quotationController,
+    applicationController,
 }

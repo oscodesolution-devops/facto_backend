@@ -11,7 +11,7 @@ export const initiatePayment = bigPromise(
     try {
       const { userId, items, currency = "INR" } = req.body;
 
-      if (!userId || !items || items.length === 0) {
+      if (!userId || !items || items.length === 0 ) {
         return next(
             createCustomError("Invalid request body", StatusCode.BAD_REQ)
           );
@@ -32,6 +32,7 @@ export const initiatePayment = bigPromise(
         amount,
         currency,
         items,
+        // selectedFeatures,
         status: "pending",
         paymentMethod: "razorpay",
         transactionId: razorpayOrder.id,
@@ -54,7 +55,7 @@ export const initiatePayment = bigPromise(
 
 export const verifyPayment = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature ,selectedFeatures} = req.body;
   
       const isValid = await verifyRazorpayPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
   
@@ -85,6 +86,7 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
             itemType: item.itemType,
             itemId: item.itemId,
             paymentOrderId: paymentOrder._id,
+            selectedFeatures: selectedFeatures,
             status: 'active',
           });
   
@@ -126,8 +128,9 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
   
   export const handleWebhook = async (req: Request, res: Response,next:NextFunction) => {
     try {
+      const rawBody = JSON.stringify(req.body);
       const signature = req.headers['x-razorpay-signature'] as string;
-      const isValid = verifyWebhookSignature(req.body, signature);
+      const isValid = verifyWebhookSignature(rawBody, signature);
   
       if (!isValid) {
         return next(

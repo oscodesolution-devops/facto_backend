@@ -13,6 +13,7 @@ import requestRoute from "./request.route"
 import subServiceRequirementRoute from "./subServiceRequirement.route"
 import paymentRoute from "./paymnt.route"
 import quotationRoute from "./quotation.route"
+import applicationRoute from "./applicationRoute"
 const router: Router = express.Router();
 
 router.use("/auth", authRoute);
@@ -29,6 +30,8 @@ router.use("/request", requestRoute);
 router.use("/requirements",subServiceRequirementRoute);
 router.use("/payment",paymentRoute);
 router.use("/quotation",quotationRoute);
+router.use("/application",applicationRoute);
+
 
 router.get("/", (req: Request, res: Response) => {
   return res.status(200).send({

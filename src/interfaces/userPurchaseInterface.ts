@@ -7,6 +7,7 @@ export interface IUserPurchase extends Document {
   paymentOrderId: mongoose.Types.ObjectId;
   purchaseDate: Date;
   expiryDate?: Date;
+  selectedFeatures: string[];
   status: 'active' | 'expired' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;

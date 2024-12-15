@@ -10,10 +10,11 @@ export const createQuotation = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user._id;
-      const { subServiceId, selectedFeatures } = req.body;
+        const { subServiceId, selectedFeatures } = req.body;
+        console.log(userId,subServiceId,selectedFeatures);
 
       // Validate required fields
-      if (!userId || !subServiceId || !selectedFeatures.length()) {
+      if (!userId || !subServiceId || !selectedFeatures) {
         return next(
           createCustomError(
             "User ID, Sub Service ID, and Selected Features are required", 

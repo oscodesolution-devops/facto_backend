@@ -195,8 +195,7 @@ export const login = bigPromise(
       // Create token
       const token = jwt.sign(
         { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        process.env.JWT_SECRET
       );
 
       // Remove password from response
@@ -1693,6 +1692,158 @@ export const findQuotationsByUserId = bigPromise(
       );
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+
+// controllers/applicationController.ts (add to existing file)
+
+// Edit Application by ID
+export const updateApplication = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { applicationId } = req.params;
+
+      // Validate application ID
+      if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+        return next(
+          createCustomError("Invalid Application ID", StatusCode.BAD_REQ)
+        );
+      }
+
+      const {
+        userDocuments = [],
+        additionalNotes,
+        requestedFeatures,
+        status
+      } = req.body;
+
+      // Find the existing application
+      const application = await db.Application.findOne({
+        _id: applicationId
+      });
+
+      if (!application) {
+        return next(
+          createCustomError("Application not found", StatusCode.NOT_FOUND)
+        );
+      }
+
+      // Validate user documents
+      const validatedDocuments = await Promise.all(
+        userDocuments.map(async (docId: string) => {
+          const doc = await db.UserDocument.findOne({ 
+            _id: docId, 
+            // userId: userId,
+            subServiceId: application.subServiceId
+          });
+          return doc ? doc._id : null;
+        })
+      );
+
+      // Filter out null values
+      const filteredDocuments = validatedDocuments.filter(doc => doc !== null);
+
+      // Update application
+      application.userDocuments = filteredDocuments;
+      if (additionalNotes) application.additionalNotes = additionalNotes;
+      if (requestedFeatures) application.requestedFeatures = requestedFeatures;
+      
+      // Only allow certain status changes
+      const allowedStatusChanges = {
+        draft: ['submitted'],
+        submitted: ['draft']
+      };
+
+      if (status) {
+        
+        application.status = status;
+      }
+
+      await application.save();
+
+      const response = sendSuccessApiResponse(
+        "Application updated successfully",
+        { 
+          application,
+          message: status 
+            ? (status === 'submitted' 
+              ? "Your application has been submitted for review" 
+              : "Application draft saved")
+            : "Application updated"
+        }
+      );
+
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
+// Get All Applications for a Specific SubService
+export const getAllApplicationsBySubService = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { subServiceId } = req.params;
+      const { 
+        status, 
+        page = 1, 
+        limit = 10, 
+        sortBy = 'createdAt', 
+        sortOrder = 'desc' 
+      } = req.query;
+
+      const subService = await db.SubService.findById(subServiceId);
+      if (!subService) {
+        return next(
+          createCustomError("Invalid SubService", StatusCode.BAD_REQ)
+        );
+      }
+
+      // Build query
+      const query: any = { subServiceId };
+      if (status) query.status = status;
+
+      // Pagination and sorting
+      const skipIndex = (Number(page) - 1) * Number(limit);
+      const sortOptions: any = {};
+      sortOptions[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+
+      // Fetch applications with pagination and population
+      const applications = await db.Application.find(query)
+        .sort(sortOptions)
+        .skip(skipIndex)
+        .limit(Number(limit))
+        .populate({
+          path: 'userId',
+          select: 'name email phone' // Select specific user fields
+        })
+        .populate({
+          path: 'userDocuments',
+          select: 'title documentType documentUrl'
+        });
+
+      // Count total matching documents
+      const total = await db.Application.countDocuments(query);
+
+      const response = sendSuccessApiResponse(
+        "Applications retrieved successfully",
+        { 
+          applications,
+          pagination: {
+            total,
+            page: Number(page),
+            limit: Number(limit),
+            totalPages: Math.ceil(total / Number(limit))
+          }
+        }
+      );
+
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
   }

@@ -12,10 +12,10 @@ export interface AuthRequest extends Request {
 export const verifyToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log(token)
     if (!token) {
       return next(createCustomError('No token provided', StatusCode.UNAUTH));
     }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
     
     const user = await db.User.findById(decoded.userId);

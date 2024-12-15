@@ -13,6 +13,7 @@ const UserPurchaseSchema = new mongoose.Schema<IUserPurchase, UserPurchaseModel>
       enum: ["course", "service"],
       required: true,
     },
+    selectedFeatures: [String],
     itemId: {
       type: mongoose.Schema.Types.ObjectId,
       refPath: "itemType",

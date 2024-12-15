@@ -286,5 +286,8 @@ router
   .route("/quotation/:userId")
   .get(verifyToken,isAdmin,controllers.adminController.findQuotationsByUserId);
 
+router.put('/applications/:applicationId', verifyToken,isAdmin, controllers.adminController.updateApplication);
+router.get('/subservices/:subServiceId/applications', verifyToken,isAdmin, controllers.adminController.getAllApplicationsBySubService);
+
 
 export default router;

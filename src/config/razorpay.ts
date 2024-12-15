@@ -8,7 +8,7 @@ const razorpay = new Razorpay({
 
 export async function createOrder(amount: number, currency: string, receipt: string) {
   const options = {
-    amount,
+    amount:amount*100,
     currency,
     receipt,
   };
@@ -25,7 +25,7 @@ export async function createOrder(amount: number, currency: string, receipt: str
 export async function verifyRazorpayPayment(orderId: string, paymentId: string, signature: string) {
   const body = orderId + '|' + paymentId;
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET!)//check for the key
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)//check for the key
     .update(body.toString())
     .digest('hex');
 
@@ -38,6 +38,9 @@ export function verifyWebhookSignature(body: string, signature: string): boolean
     .update(body)
     .digest('hex');
 
-  return expectedSignature === signature;
+  return crypto.timingSafeEqual(
+    Buffer.from(expectedSignature),
+    Buffer.from(signature)
+  );
 }
 

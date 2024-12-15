@@ -55,8 +55,7 @@ export const signup: RequestHandler = bigPromise(
 
       const token = jwt.sign(
         { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        process.env.JWT_SECRET
       );
 
       const userResponse = user.toObject();
@@ -107,7 +106,7 @@ export const login: RequestHandler = bigPromise(
         const token = jwt.sign(
           { userId: user._id, email: user.email },
           process.env.JWT_SECRET,
-          { expiresIn: process.env.JWT_EXPIRES_IN }
+         
         );
         // Remove password from response
         const userResponse = user.toObject();
@@ -183,8 +182,7 @@ export const login: RequestHandler = bigPromise(
         // Create token
         const token = jwt.sign(
           { userId: user._id, email: user.email },
-          process.env.JWT_SECRET,
-          { expiresIn: process.env.JWT_EXPIRES_IN }
+          process.env.JWT_SECRET
         );
         // Remove password from response
         const userResponse = user.toObject();

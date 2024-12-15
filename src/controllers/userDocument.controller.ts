@@ -17,6 +17,7 @@ export const uploadDocument = bigPromise(
         req.body;
         const documentUrl =  req.body.documentUrl
       // Check for required fields
+        console.log(userId,subServiceId,documentType,title)
       if (!userId || !subServiceId || !documentType || !title) {
         return next(
           createCustomError("Missing required fields", StatusCode.BAD_REQ)
