@@ -48,7 +48,7 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cors(corsOptions));
 app.options("*", cors());
 
-// HTTP context middleware
+
 app.use(httpContext.middleware);
 app.use(generateRequestId as RequestHandler);
 
