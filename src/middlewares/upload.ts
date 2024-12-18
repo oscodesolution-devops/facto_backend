@@ -21,8 +21,9 @@ const storage = new CloudinaryStorage({
     folder: "services", // folder name in cloudinary
     allowed_formats: ["jpg", "jpeg", "png", "svg"], // allowed formats
     transformation: [{ width: 500, height: 500, crop: "limit" }], // optional transformations
-  },
+  } as any, // Bypass TypeScript checks
 });
+
 
 // Create multer upload middleware
 export const uploadIcon = multer({
@@ -80,7 +81,7 @@ const userDocumentStorage = new CloudinaryStorage({
     folder: "user_documents", // folder name in cloudinary for user documents
     allowed_formats: ["jpg", "jpeg", "png", "pdf", "doc", "docx"], // allowed formats for user documents
     resource_type: "auto", // allows for non-image file types
-  },
+  } as any,
 });
 
 // Create multer upload middleware for user documents
@@ -173,7 +174,7 @@ const courseThumbnailStorage = new CloudinaryStorage({
     folder: "course_thumbnails",
     allowed_formats: ["jpg", "jpeg", "png"],
     transformation: [{ width: 1280, height: 720, crop: "limit" }],
-  },
+  } as any,
 });
 
 // Video Storage Configuration
@@ -183,7 +184,7 @@ const courseVideoStorage = new CloudinaryStorage({
     folder: "course_videos",
     allowed_formats: ["mp4", "mov", "avi"],
     resource_type: "video",
-  },
+  } as any,
 });
 
 export const uploadCourseMaterials = multer({
@@ -207,6 +208,11 @@ export const uploadCourseMaterials = multer({
   { name: "thumbnail", maxCount: 1 },
   { name: "video", maxCount: 1 },
 ]);
+const isFileDictionary = (
+  files: { [fieldname: string]: Express.Multer.File[] } | Express.Multer.File[]
+): files is { [fieldname: string]: Express.Multer.File[] } => {
+  return typeof files === "object" && !Array.isArray(files);
+};
 
 export const processCourseMaterialsUpload = async (
   req: Request,
@@ -222,7 +228,7 @@ export const processCourseMaterialsUpload = async (
       const uploadPromises = [];
 
       // Thumbnail Upload
-      if (req.files && req.files["thumbnail"]) {
+      if (req.files && isFileDictionary(req.files) && req.files["thumbnail"]) {
         const thumbnailFile = (req.files as { [fieldname: string]: Express.Multer.File[] })["thumbnail"][0];
         
         const thumbnailUploadPromise = new Promise((resolve, reject) => {
@@ -250,7 +256,7 @@ export const processCourseMaterialsUpload = async (
       }
 
       // Video Upload
-      if (req.files && req.files["video"]) {
+      if (req.files&& isFileDictionary(req.files)  && req.files["video"]) {
         const videoFile = (req.files as { [fieldname: string]: Express.Multer.File[] })["video"][0];
         
         const videoUploadPromise = new Promise((resolve, reject) => {
