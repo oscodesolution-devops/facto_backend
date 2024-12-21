@@ -4,7 +4,7 @@ export interface IUserPurchase extends Document {
   userId: mongoose.Types.ObjectId;
   itemType: 'course' | 'service';
   itemId: mongoose.Types.ObjectId;
-  paymentOrderId: mongoose.Types.ObjectId;
+  paymentOrderId: mongoose.Types.ObjectId|any;
   purchaseDate: Date;
   expiryDate?: Date;
   selectedFeatures: string[];

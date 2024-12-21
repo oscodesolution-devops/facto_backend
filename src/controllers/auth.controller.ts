@@ -1,3 +1,4 @@
+import { sendOTP, verifyOTP } from "@/config/twilio";
 import { StatusCode } from "@/constants/constants";
 import { createCustomError } from "@/errors/customAPIError";
 import { IUser } from "@/interfaces";
@@ -57,7 +58,6 @@ export const signup: RequestHandler = bigPromise(
         { userId: user._id, email: user.email },
         process.env.JWT_SECRET
       );
-
       const userResponse = user.toObject();
       delete userResponse.password;
 
@@ -139,7 +139,8 @@ export const login: RequestHandler = bigPromise(
         if (!user) {
           return next(createCustomError("Invalid credentials", StatusCode.UNAUTH));
         }
-  
+        await sendOTP("+91"+String(phoneNo));
+        
         // Compare password
         
         const response = sendSuccessApiResponse(
@@ -171,8 +172,8 @@ export const login: RequestHandler = bigPromise(
         }
   
         // Compare password
-        
-        if(!(otp==123456)){
+        const status = await verifyOTP("+91"+String(phoneNo),otp)
+        if(!(status=="approved")){
           return next(createCustomError("Invalid OTP", StatusCode.UNAUTH));
         }
         // Update last login

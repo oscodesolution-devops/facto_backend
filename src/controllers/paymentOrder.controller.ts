@@ -39,6 +39,7 @@ export const initiatePayment = bigPromise(
       });
 
       await paymentOrder.save();
+      console.log(paymentOrder)
       const response = sendSuccessApiResponse("Order initiated Successfully",{
         orderId: razorpayOrder.id,
         amount: razorpayOrder.amount,
@@ -117,6 +118,7 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
           return purchase.save();
         })
       );
+      console.log(userPurchases);
       const response = sendSuccessApiResponse("Payment verified and purchases recorded",{paymentOrderId: paymentOrder._id,userPurchases: userPurchases},200)
   
       res.send(response);
