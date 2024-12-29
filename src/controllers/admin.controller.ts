@@ -5,7 +5,7 @@ import { sendSuccessApiResponse } from "@/middlewares/successApiResponse";
 import bigPromise from "@/middlewares/bigPromise";
 import { db } from "@/models";
 import { AuthRequest } from "@/middlewares/auth";
-import { signup } from "./auth.controller";
+// import { signup } from "./auth.controller";
 import { ICourse, ILecture, IService, IUser } from "@/interfaces";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -34,7 +34,7 @@ export const addUser = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Use the existing signup controller
-      await signup(req, res, next);
+      // await signup(req, res, next);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
@@ -46,7 +46,7 @@ export const addEmployee = bigPromise(
     try {
       const { email } = req.body;
       // Use the existing signup controller
-      await signup(req, res, next);
+      // await signup(req, res, next);
       const employee = await db.User.findOne({ email });
       employee.role = "employee";
 

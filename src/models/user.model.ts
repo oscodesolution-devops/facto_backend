@@ -17,10 +17,6 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
         message: "Please enter a valid email address",
       },
     },
-    isNew:{
-      type:Boolean,
-      default: true,
-    },
     fullName: {
       type: String,
       trim: true,
@@ -117,7 +113,9 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
         enum: ["composition", "regular"],
       },
     },
-
+    password: {
+      type: String,
+    },
     // Income Tax Profile
     incomeTaxProfile: {
       pan: {

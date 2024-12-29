@@ -28,6 +28,7 @@ interface IIncomeTaxProfile {
 interface IUser extends mongoose.Document {
   // Basic details
   email?: string;
+  password?: string;
   fullName?: string;
   alternativePhone: string;
   fathersName: string;
@@ -37,7 +38,6 @@ interface IUser extends mongoose.Document {
   dateOfBirth: Date;
   state?: string;
   address?: string;
-  isNew:boolean;
   profilePictureUrl?: string;
 
   // Role and metadata
