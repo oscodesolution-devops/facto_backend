@@ -29,44 +29,75 @@ export const getUserDetails = bigPromise(
 );
 
 export const editOwnProfile = bigPromise(
-    async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
       try {
-        const user = req.user;
-        const {
-          fullName,
-          phoneNumber,
-          profilePictureUrl,
-          panNumber,
-          aadharNumber,
-        }: Partial<IUser> = req.body;
-  
-        if (!user) {
-          return next(createCustomError('User not found', StatusCode.NOT_FOUND));
-        }
-  
-        // Update user fields
-        if (fullName) user.fullName = fullName;
-        if (phoneNumber) user.phoneNumber = phoneNumber;
-        if (profilePictureUrl) user.profilePictureUrl = profilePictureUrl;
-        if (panNumber) user.panNumber = panNumber;
-        if (aadharNumber) user.aadharNumber = aadharNumber;
-  
-        await user.save();
-  
-        const updatedUser = user.toObject();
-        delete updatedUser.password;
-  
-        const response = sendSuccessApiResponse("Profile updated successfully", { user: updatedUser });
-        res.status(StatusCode.OK).send(response);
+          const user = req.user;
+          const {
+              fullName,
+              phoneNumber,
+              profilePictureUrl,
+              panNumber,
+              aadharNumber,
+              dateOfBirth,
+              state,
+              address,
+              fathersName,
+              alternativePhone,
+
+              // GST Profile
+              gstProfile,
+
+              // Income Tax Profile
+              incomeTaxProfile
+          }: Partial<IUser> = req.body;
+
+          if (!user) {
+              return next(createCustomError('User not found', StatusCode.NOT_FOUND));
+          }
+
+          // Update Basic Details
+          if (fullName) user.fullName = fullName;
+          if(fathersName) user.fathersName = fathersName;
+          if(alternativePhone) user.alternativePhone = alternativePhone;
+          if (phoneNumber) user.phoneNumber = phoneNumber;
+          if (profilePictureUrl) user.profilePictureUrl = profilePictureUrl;
+          if (panNumber) user.panNumber = panNumber;
+          if (aadharNumber) user.aadharNumber = aadharNumber;
+          if (dateOfBirth) user.dateOfBirth = dateOfBirth;
+          if (state) user.state = state;
+          if (address) user.address = address;
+
+          // Update GST Profile
+          if (gstProfile) {
+              user.gstProfile = {
+                  ...user.gstProfile,
+                  ...gstProfile
+              };
+          }
+
+          // Update Income Tax Profile
+          if (incomeTaxProfile) {
+              user.incomeTaxProfile = {
+                  ...user.incomeTaxProfile,
+                  ...incomeTaxProfile
+              };
+          }
+
+          await user.save();
+
+          const updatedUser = user.toObject();
+          delete updatedUser.password;
+
+          const response = sendSuccessApiResponse("Profile updated successfully", { user: updatedUser });
+          res.status(StatusCode.OK).send(response);
       } catch (error: any) {
-        if (error.name === "ValidationError") {
-          return next(createCustomError(error.message, StatusCode.BAD_REQ));
-        }
-        next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+          if (error.name === "ValidationError") {
+              return next(createCustomError(error.message, StatusCode.BAD_REQ));
+          }
+          next(createCustomError(error.message, StatusCode.INT_SER_ERR));
       }
-    }
-  );
-  
+  }
+);
 
 
 export const getAllDocumentsByUserId = bigPromise(

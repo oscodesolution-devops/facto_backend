@@ -1,12 +1,12 @@
-import { IUser, UserModel } from "@/interfaces";
 import mongoose from "mongoose";
-// import { IUser, UserModel } from "../interfaces/index.js";
+import { IUser, UserModel } from "@/interfaces";
+import { validate } from "uuid";
 
 const UserSchema = new mongoose.Schema<IUser, UserModel>(
   {
+    // Basic Details
     email: {
       type: String,
-      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -17,10 +17,9 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
         message: "Please enter a valid email address",
       },
     },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password should be at least 6 characters"],
+    isNew:{
+      type:Boolean,
+      default: true,
     },
     fullName: {
       type: String,
@@ -34,27 +33,122 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
         message: "Full name should only contain letters and spaces",
       },
     },
-    phoneNumber: {
-      type: Number,
-      unique: true,
-      
+    fathersName:{
+      type: String,
+      trim: true,
+      minlength: [2, "Name is too short"],
+      maxlength: [50, "Name is too long"],
       validate: {
-        validator: function (v: number) {
-          return /^[6-9]\d{9}$/.test(v.toString());
+        validator: function (v: string) {
+          return /^[a-zA-Z ]+$/.test(v);
+        },
+        message: "Fathers name should only contain letters and spaces",
+      },
+    },
+    alternativePhone:{
+      type: String,
+      validate: {
+        validator: function (v: string) {
+          return /^[6-9]\d{9}$/.test(v);
         },
         message: "Please enter a valid 10-digit Indian mobile number",
       },
     },
-    aadharNumber: {
-      type: Number,
-    
+    phoneNumber: {
+      type: String,
+      validate: {
+        validator: function (v: string) {
+          return /^[6-9]\d{9}$/.test(v);
+        },
+        message: "Please enter a valid 10-digit Indian mobile number",
+      },
     },
     panNumber: {
       type: String,
     },
+    aadharNumber: {
+      type: Number,
+    },
     dateOfBirth: {
       type: Date,
     },
+    state: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+
+    // GST Profile
+    gstProfile: {
+      gstNumber: {
+        type: String,
+      },
+      gstId: {
+        type: String,
+      },
+      gstPassword: {
+        type: String,
+      },
+      gstRegisteredPhoneNumber: {
+        type: String,
+        validate: {
+          validator: function (v: string) {
+            return /^[6-9]\d{9}$/.test(v);
+          },
+          message: "Please enter a valid 10-digit Indian mobile number",
+        },
+      },
+      legalName: {
+        type: String,
+      },
+      tradeName: {
+        type: String,
+      },
+      additionalTradeName: {
+        type: String,
+      },
+      frequency: {
+        type: String,
+        enum: ["quarterly", "monthly"],
+      },
+      gstType: {
+        type: String,
+        enum: ["composition", "regular"],
+      },
+    },
+
+    // Income Tax Profile
+    incomeTaxProfile: {
+      pan: {
+        type: String,
+      },
+      password: {
+        type: String,
+      },
+      aadharRegisteredMobile: {
+        type: String,
+        validate: {
+          validator: function (v: string) {
+            return /^[6-9]\d{9}$/.test(v);
+          },
+          message: "Please enter a valid 10-digit Indian mobile number",
+        },
+      },
+      bankDetails: {
+        accountNumber: {
+          type: String,
+        },
+        ifscCode: {
+          type: String,
+        },
+        bankName: {
+          type: String,
+        },
+      },
+    },
+
+    // Other Details
     profilePictureUrl: {
       type: String,
       validate: {
@@ -67,7 +161,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     role: {
       type: String,
       enum: {
-        values: ["user", "admin","employee"],
+        values: ["user", "admin", "employee"],
         message: "{VALUE} is not a valid role",
       },
       required: [true, "Role is required"],

@@ -34,7 +34,7 @@ export const getBlogs = bigPromise(
   
         // Pagination
         const options = {
-          select: 'title imageUrl createdAt tags',
+          select: 'title imageUrl createdAt tags reference',
           sort: { createdAt: -1 },
           limit: Number(limit),
           skip: (Number(page) - 1) * Number(limit)
@@ -55,6 +55,7 @@ export const getBlogs = bigPromise(
             }
           }
         );
+        console.log(blogs)
         res.status(StatusCode.OK).send(response);
       } catch (error) {
         next(createCustomError(error.message, StatusCode.INT_SER_ERR));
