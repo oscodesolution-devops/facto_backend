@@ -136,3 +136,35 @@ export const removeDocument = bigPromise(
     }
   }
 );
+
+export const fetchDocuments = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user._id; // Get the user ID from the authenticated user
+      // const { subServiceId, documentType } = req.query;
+
+      // Validate query parameters
+      console.log(userId)
+
+      // Build the filter object
+      const filter: any = { userId };
+
+      
+      // Fetch documents from the database
+      const userDocuments = await db.UserDocument.find(filter);
+
+      if (!userDocuments || userDocuments.length === 0) {
+        return next(
+          createCustomError("No documents found for the given filters", StatusCode.NOT_FOUND)
+        );
+      }
+
+      // Return the documents in the response
+      const response = sendSuccessApiResponse("Documents fetched successfully", { userDocuments });
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+

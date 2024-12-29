@@ -8,6 +8,7 @@ import { processUserDocumentUpload } from "@/middlewares/upload";
 
 router.route("/upload/:subServiceId").post(verifyToken,processUserDocumentUpload,controllers.userDocumentController.uploadDocument);
 router.route("/remove/:documentId").delete(verifyToken,controllers.userDocumentController.removeDocument);
+router.route("/get").get(verifyToken,controllers.userDocumentController.fetchDocuments);
 
 
 export default router;

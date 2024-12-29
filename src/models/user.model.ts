@@ -7,7 +7,6 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
     // Basic Details
     email: {
       type: String,
-      unique: true,
       lowercase: true,
       trim: true,
       validate: {
@@ -77,73 +76,47 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
 
     // GST Profile
     gstProfile: {
-      gstNumber: {
+      gstPortalLoginId: {
         type: String,
-      },
-      gstId: {
-        type: String,
+        
       },
       gstPassword: {
         type: String,
+        
       },
-      gstRegisteredPhoneNumber: {
+      gstNumber: {
         type: String,
-        validate: {
-          validator: function (v: string) {
-            return /^[6-9]\d{9}$/.test(v);
-          },
-          message: "Please enter a valid 10-digit Indian mobile number",
-        },
-      },
-      legalName: {
-        type: String,
+        
       },
       tradeName: {
         type: String,
+        
       },
       additionalTradeName: {
         type: String,
+        // Not required as it's optional in the form
       },
-      frequency: {
+      gstrType: {
         type: String,
-        enum: ["quarterly", "monthly"],
+        enum: ["regular", "composition", "unregistered"],
+        
       },
-      gstType: {
+      returnType: {
         type: String,
-        enum: ["composition", "regular"],
-      },
+        enum: ["GSTR-1", "GSTR-IFF", "GSTR-3B", "other"],
+        
+      }
     },
-    password: {
-      type: String,
-    },
-    // Income Tax Profile
-    incomeTaxProfile: {
-      pan: {
-        type: String,
+    incomeTaxProfile:{
+      password: String,
+      itrType: {
+        type:String,
+        enum:["ITR-1","ITR-2","ITR-3","ITR-4","ITR-5","ITR-6"]
       },
-      password: {
-        type: String,
-      },
-      aadharRegisteredMobile: {
-        type: String,
-        validate: {
-          validator: function (v: string) {
-            return /^[6-9]\d{9}$/.test(v);
-          },
-          message: "Please enter a valid 10-digit Indian mobile number",
-        },
-      },
-      bankDetails: {
-        accountNumber: {
-          type: String,
-        },
-        ifscCode: {
-          type: String,
-        },
-        bankName: {
-          type: String,
-        },
-      },
+      bankDetails:{
+        accountNumber:String,
+        ifscCode: String,
+      }
     },
 
     // Other Details

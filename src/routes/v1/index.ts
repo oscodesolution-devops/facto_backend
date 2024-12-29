@@ -14,6 +14,7 @@ import subServiceRequirementRoute from "./subServiceRequirement.route"
 import paymentRoute from "./paymnt.route"
 import quotationRoute from "./quotation.route"
 import applicationRoute from "./applicationRoute"
+import { handleMulterError, uploadIcon } from "@/middlewares/upload";
 
 const router = express.Router();
 
@@ -32,6 +33,20 @@ router.use("/requirements",subServiceRequirementRoute);
 router.use("/payment",paymentRoute);
 router.use("/quotation",quotationRoute);
 router.use("/application",applicationRoute);
+router.post('/image', uploadIcon, (req: Request, res: Response, next: NextFunction) => {
+  try {console.log("ho")
+    // Check if the file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    // Return the image URL from Cloudinary (available in req.file.path)
+    return res.status(200).json({ imageUrl: req.file.path });
+  } catch (error) {
+    // Handle any errors that occurred during the file upload process
+    return res.status(500).json({ message: "Error uploading image", error: error.message });
+  }
+});
 
 
 router.get("/", (req: Request, res: Response) => {

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 interface IBankDetails {
   accountNumber: string;
   ifscCode: string;
-  bankName: string;
+
 }
 
 interface IGSTProfile {
@@ -19,9 +19,9 @@ interface IGSTProfile {
 }
 
 interface IIncomeTaxProfile {
-  pan: string;
+  
   password: string;
-  aadharRegisteredMobile: string;
+  itrType: "ITR-1"|"ITR-2"|"ITR-3"|"ITR-4"|"ITR-5"|"ITR-6"
   bankDetails: IBankDetails;
 }
 
