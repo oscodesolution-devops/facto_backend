@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response,NextFunction } from "express";
 import authRoute from "./auth.route";
 import userRoute from "./user.route";
 import adminRoute from "./admin.route";
@@ -15,6 +15,8 @@ import paymentRoute from "./paymnt.route"
 import quotationRoute from "./quotation.route"
 import applicationRoute from "./applicationRoute"
 import { handleMulterError, uploadIcon } from "@/middlewares/upload";
+import { AuthRequest } from "@/middlewares/auth";
+import bigPromise from "@/middlewares/bigPromise";
 
 const router = express.Router();
 
@@ -33,7 +35,7 @@ router.use("/requirements",subServiceRequirementRoute);
 router.use("/payment",paymentRoute);
 router.use("/quotation",quotationRoute);
 router.use("/application",applicationRoute);
-router.post('/image', uploadIcon, (req: Request, res: Response, next: NextFunction) => {
+router.post('/image', uploadIcon,bigPromise(async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {console.log("ho")
     // Check if the file was uploaded
     if (!req.file) {
@@ -41,12 +43,12 @@ router.post('/image', uploadIcon, (req: Request, res: Response, next: NextFuncti
     }
 
     // Return the image URL from Cloudinary (available in req.file.path)
-    return res.status(200).json({ imageUrl: req.file.path });
+     res.status(200).json({ imageUrl: req.file.path });
   } catch (error) {
     // Handle any errors that occurred during the file upload process
-    return res.status(500).json({ message: "Error uploading image", error: error.message });
+    res.status(500).json({ message: "Error uploading image", error: error.message });
   }
-});
+}));
 
 
 router.get("/", (req: Request, res: Response) => {
