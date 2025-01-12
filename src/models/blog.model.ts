@@ -13,10 +13,16 @@ const BlogSchema = new mongoose.Schema<IBlog, BlogModel>(
       type: String,
       required: true,
     },
-    imageUrl: {
+    contentType: {
       type: String,
+      enum: ['image', 'video'],
       required: true,
     },
+    contentUrl: {
+      type: String,
+      required: true,
+      }
+    ,
     reference: {
       title: {
         type: String,
@@ -25,16 +31,8 @@ const BlogSchema = new mongoose.Schema<IBlog, BlogModel>(
       url: {
         type: String,
         required: true,
-        validate: {
-          validator: function(v: string) {
-            // Basic URL validation
-            return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
-          },
-          message: props => `${props.value} is not a valid URL!`
-        }
       }
     },
-    // Optional additional fields
     author: {
       type: String,
       default: 'Anonymous'
@@ -52,14 +50,13 @@ const BlogSchema = new mongoose.Schema<IBlog, BlogModel>(
 // Indexes
 BlogSchema.index({ title: 'text', content: 'text' });
 BlogSchema.index({ tags: 1 });
-BlogSchema.index({ status: 1 });
+BlogSchema.index({ contentType: 1 });
+BlogSchema.index({ createdAt: -1 });
 
 // Virtual for blog URL
 BlogSchema.virtual('url').get(function() {
   return `/blogs/${this._id}`;
 });
-
-
 
 const Blog = mongoose.model<IBlog, BlogModel>(
   'Blog', 

@@ -1,17 +1,21 @@
-import mongoose, { Document } from 'mongoose';
+import { Document, Model } from "mongoose";
 
-interface IBlog extends Document {
+export interface IBlog extends Document {
   title: string;
   content: string;
-  imageUrl: string;
+  contentType: 'image' | 'video';
+  contentUrl: string;
   reference: {
     title: string;
     url: string;
   };
-  author?: string;
-  tags?: string[];
+  author: string;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  url: string; // Virtual
 }
 
-interface BlogModel extends mongoose.Model<IBlog> {}
-
-export { BlogModel, IBlog };
+export interface BlogModel extends Model<IBlog> {
+  // Add any static methods here if needed
+}

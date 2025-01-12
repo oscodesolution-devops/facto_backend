@@ -9,26 +9,23 @@ import { NextFunction, Response } from "express";
 export const createQuotation = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const userId = req.user._id;
-        const { subServiceId, selectedFeatures } = req.body;
-        console.log(userId,subServiceId,selectedFeatures);
-
+      const userId = req.user?._id;
+      const { subServiceId, selectedFeatures } = req.body;
+  
       // Validate required fields
-      if (!userId || !subServiceId || !selectedFeatures) {
-        return next(
-          createCustomError(
-            "User ID, Sub Service ID, and Selected Features are required", 
-            StatusCode.BAD_REQ
-          )
-        );
+      if (!userId || !subServiceId || !selectedFeatures || !Array.isArray(selectedFeatures)) {
+        return res.status(StatusCode.BAD_REQ).json({
+          success: false,
+          message: "User ID, Sub Service ID, and Selected Features (as an array) are required",
+        });
       }
-
+  
       // Create quotation
       const newQuotation = await db.Quotation.create({
         userId,
         subServiceId,
         selectedFeatures,
-      });
+      });  
 
       // Send success response
       const response = sendSuccessApiResponse("Quotation created successfully", newQuotation);

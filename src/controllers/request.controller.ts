@@ -27,3 +27,58 @@ export const addRequest = bigPromise(
       }
     }
   );
+
+  export const assignEmployee = bigPromise(
+    async(req: Request, res: Response, next: NextFunction) => {
+      const { employeeId } = req.body;
+      const { id } = req.params;
+  
+      try {
+        // Validate required fields
+        if (!employeeId) {
+          return next(
+            createCustomError(
+              "Employee ID is required",
+              StatusCode.BAD_REQ
+            )
+          );
+        }
+  
+        if (!id) {
+          return next(
+            createCustomError(
+              "Request ID is required",
+              StatusCode.BAD_REQ
+            )
+          );
+        }
+  
+        // Find the request document and update it
+        const updatedRequest = await db.Request.findByIdAndUpdate(
+          id,
+          { assignee: employeeId },
+          { new: true, runValidators: true }
+        );
+  
+        // Check if request exists
+        if (!updatedRequest) {
+          return next(
+            createCustomError(
+              "Request not found",
+              StatusCode.NOT_FOUND
+            )
+          );
+        }
+  
+        const response = sendSuccessApiResponse(
+          "Employee assigned successfully",
+          updatedRequest
+        );
+        
+        res.status(StatusCode.OK).send(response);
+  
+      } catch (error: any) {
+        next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+      }
+    }
+  );

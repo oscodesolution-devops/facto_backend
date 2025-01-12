@@ -9,6 +9,7 @@ import {
   uploadCourseMaterials,
   uploadIcon,
 } from "@/middlewares/upload";
+import { processBlogContentUpload } from "@/middlewares/blogUpload";
 
 router.post("/create", controllers.adminController.addAdmin);
 router.post("/login", controllers.adminController.login);
@@ -243,17 +244,20 @@ router
   .post(
     verifyToken,
     isAdmin,
-    processCourseMaterialsUpload,
+    processBlogContentUpload,
     controllers.adminController.createBlog
-  );
-router
-  .route("/blogs")
+  )
   .get(verifyToken, isAdmin, controllers.adminController.ListBlogs);
 
 router
   .route("/blogs/:id")
-  .delete(verifyToken, isAdmin, controllers.adminController.deleteBlog);
-
+  .delete(verifyToken, isAdmin, controllers.adminController.deleteBlog)
+  .put(
+    verifyToken,
+    isAdmin,
+    processBlogContentUpload,
+    controllers.adminController.updateBlog
+  );
 router
   .route("/query")
   .post(verifyToken, isAdmin, controllers.queryController.addQuery);
@@ -273,6 +277,10 @@ router
 router
   .route("/request")
   .post(verifyToken,isAdmin,controllers.requestController.addRequest);
+
+  router
+  .route("/request/:id")
+  .post(verifyToken,isAdmin,controllers.requestController.assignEmployee);
 
 router
   .route("/quotation")

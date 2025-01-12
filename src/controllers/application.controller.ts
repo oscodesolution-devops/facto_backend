@@ -17,10 +17,15 @@ export const createApplication = bigPromise(
         subServiceId, 
         userDocuments = [], 
         additionalNotes, 
+        billingPeriod,
         requestedFeatures,
         status = "submitted" 
       } = req.body;
-
+      if(!(subServiceId&&billingPeriod)){
+        return  next(
+          createCustomError("please fill all the required details", StatusCode.BAD_REQ)
+        );
+      }
       // Validate SubService exists
       const subService = await db.SubService.findById(subServiceId);
       if (!subService) {
@@ -48,6 +53,7 @@ export const createApplication = bigPromise(
         subServiceId,
         userDocuments: filteredDocuments,
         status,
+        billingPeriod,
         additionalNotes,
         requestedFeatures
       });

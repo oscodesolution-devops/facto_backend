@@ -44,18 +44,20 @@ export const addUser = bigPromise(
 export const addEmployee = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email } = req.body;
+      const { phoneNumber,email,fullName } = req.body;
       // Use the existing signup controller
       // await signup(req, res, next);
-      const employee = await db.User.findOne({ email });
-      employee.role = "employee";
-
-      await employee.save();
-
-      // const response = sendSuccessApiResponse("Employee added successfully", {
-      //   employee,
-      // });
-      // res.status(StatusCode.OK).send(response);
+      const existingEmployee = await db.User.findOne({phoneNumber});
+      if(existingEmployee){
+        return next(createCustomError("Employee already exist with this phone number", StatusCode.BAD_REQ));
+      }
+      const user =await db.User.create({phoneNumber,email,fullName,role:"employee"});
+      
+      await user.save();
+      const response = sendSuccessApiResponse("Employee added successfully", {
+        employee:user,
+      });
+      res.status(StatusCode.OK).send(response);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
@@ -655,23 +657,25 @@ export const createSubService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { serviceId } = req.params;
-      const { title, description, features, price, period, requests } =
-        req.body;
+      const { title, description, features, price, period, isActive, requests } = req.body;
 
+      // Validate serviceId
       if (!mongoose.Types.ObjectId.isValid(serviceId)) {
         return next(
           createCustomError("Invalid service ID", StatusCode.BAD_REQ)
         );
       }
 
+      // Create the sub-service with updated data format
       const subService = await db.SubService.create({
         serviceId,
         title,
         description,
-        requests,
-        features,
+        features, // Array of features as strings
         price,
         period,
+        isActive,
+        requests, // Array of requests, each with its own structure
       });
 
       const response = sendSuccessApiResponse(
@@ -696,12 +700,14 @@ export const updateSubService = bigPromise(
       const { subServiceId } = req.params;
       const updateData = req.body;
 
+      // Validate subServiceId
       if (!mongoose.Types.ObjectId.isValid(subServiceId)) {
         return next(
           createCustomError("Invalid subService ID", StatusCode.BAD_REQ)
         );
       }
 
+      // Update the sub-service with the provided data
       const subService = await db.SubService.findByIdAndUpdate(
         subServiceId,
         updateData,
@@ -727,7 +733,6 @@ export const updateSubService = bigPromise(
     }
   }
 );
-
 // Delete a SubService
 export const deleteSubService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -1403,34 +1408,41 @@ export const createBlog = bigPromise(
       const {
         title,
         content,
-        thumbnailUrl, // This will be populated by processCourseMaterialsUpload
+        contentType,
+        contentUrl,
         reference,
         tags,
+        author,
       } = req.body;
-
+console.log("sss")
       console.log(req.body);
 
       // Parse reference if it's a string
       const parsedReference =
         typeof reference === "string" ? JSON.parse(reference) : reference;
 
+      // Parse tags if it's a string
+      const parsedTags =
+        typeof tags === "string" ? JSON.parse(tags) : tags;
+
       // Validate required fields
       if (
         !title ||
         !content ||
-        !thumbnailUrl ||
+        !contentType ||
+        !contentUrl ||
         !parsedReference ||
         !parsedReference.title ||
         !parsedReference.url
       ) {
         // Clean up any uploaded file if validation fails
-        if (thumbnailUrl) {
-          await deleteUploadedFiles(thumbnailUrl);
+        if (req.file) {
+          await deleteUploadedFiles(req.file.path);
         }
-
+        console.log("jsjs")
         return next(
           createCustomError(
-            "Title, content, image URL, and valid reference are required",
+            "Title, content, content type, content URL, and valid reference are required",
             StatusCode.BAD_REQ
           )
         );
@@ -1440,22 +1452,27 @@ export const createBlog = bigPromise(
       const blog = await db.Blog.create({
         title,
         content,
-        imageUrl: thumbnailUrl, // Use the uploaded thumbnail URL
+        contentType,
+        contentUrl,
         reference: {
           title: parsedReference.title,
           url: parsedReference.url,
         },
-        tags: tags ? JSON.parse(tags) : [],
+        tags: parsedTags || [],
+        author,
       });
+
+      console.log(blog);
 
       const response = sendSuccessApiResponse("Blog created successfully", {
         blog,
       });
       res.status(StatusCode.CREATED).send(response);
     } catch (error) {
+      console.log(error)
       // Clean up any uploaded files in case of error
-      if (req.body.thumbnailUrl) {
-        await deleteUploadedFiles(req.body.thumbnailUrl);
+      if (req.file) {
+        await deleteUploadedFiles(req.file.path);
       }
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
     }
@@ -1485,7 +1502,7 @@ export const ListBlogs = bigPromise(
 
       // Pagination
       const options = {
-        select: "title content createdAt imageUrl tags",
+        select: "title content createdAt contentType contentUrl tags author",
         sort: { createdAt: -1 },
         limit: Number(limit),
         skip: (Number(page) - 1) * Number(limit),
@@ -1520,15 +1537,23 @@ export const deleteBlog = bigPromise(
         return next(createCustomError("Invalid blog ID", StatusCode.BAD_REQ));
       }
 
-      // Delete blog
-      const deletedBlog = await db.Blog.findByIdAndDelete(id);
+      // Find the blog
+      const blog = await db.Blog.findById(id);
 
-      if (!deletedBlog) {
+      if (!blog) {
         return next(createCustomError("Blog not found", StatusCode.NOT_FOUND));
       }
 
+      // Delete the associated file if it exists
+      if (blog.contentUrl && blog.contentUrl.startsWith('/uploads/')) {
+        await deleteUploadedFiles(blog.contentUrl.slice(1)); // Remove leading slash
+      }
+
+      // Delete blog
+      await db.Blog.findByIdAndDelete(id);
+
       const response = sendSuccessApiResponse("Blog deleted successfully", {
-        deletedBlog,
+        deletedBlog: blog,
       });
       res.status(StatusCode.OK).send(response);
     } catch (error) {
@@ -1537,6 +1562,82 @@ export const deleteBlog = bigPromise(
   }
 );
 
+export const updateBlog = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const {
+        title,
+        content,
+        contentType,
+        contentUrl,
+        reference,
+        tags,
+        author,
+      } = req.body;
+
+      // Validate ID
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(createCustomError("Invalid blog ID", StatusCode.BAD_REQ));
+      }
+
+      // Find the blog
+      const blog = await db.Blog.findById(id);
+
+      if (!blog) {
+        return next(createCustomError("Blog not found", StatusCode.NOT_FOUND));
+      }
+
+      // Parse reference if it's a string
+      const parsedReference =
+        typeof reference === "string" ? JSON.parse(reference) : reference;
+
+      // Parse tags if it's a string
+      const parsedTags =
+        typeof tags === "string" ? JSON.parse(tags) : tags;
+
+      // Update blog fields
+      blog.title = title || blog.title;
+      blog.content = content || blog.content;
+      blog.contentType = contentType || blog.contentType;
+      blog.author = author || blog.author;
+
+      if (parsedReference) {
+        blog.reference = {
+          title: parsedReference.title || blog.reference.title,
+          url: parsedReference.url || blog.reference.url,
+        };
+      }
+
+      if (parsedTags) {
+        blog.tags = parsedTags;
+      }
+
+      // Handle content URL update
+      if (contentUrl && contentUrl !== blog.contentUrl) {
+        // Delete old file if it exists
+        if (blog.contentUrl && blog.contentUrl.startsWith('/uploads/')) {
+          await deleteUploadedFiles(blog.contentUrl.slice(1)); // Remove leading slash
+        }
+        blog.contentUrl = contentUrl;
+      }
+
+      // Save updated blog
+      await blog.save();
+
+      const response = sendSuccessApiResponse("Blog updated successfully", {
+        blog,
+      });
+      res.status(StatusCode.OK).send(response);
+    } catch (error) {
+      // Clean up any uploaded files in case of error
+      if (req.file) {
+        await deleteUploadedFiles(req.file.path);
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
 export const getQuery = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -1585,7 +1686,7 @@ export const addCommentToQuery = bigPromise(
 export const getRequest = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const requests = await db.Request.find().sort({ createdAt: -1 });
+      const requests = await db.Request.find().sort({ createdAt: -1 }).populate('assignee').select("phoneNo fullName");
       const response = sendSuccessApiResponse("Requests fetched successfully", {
         requests,
       });
@@ -1606,11 +1707,13 @@ export const getAllQuotationRequests = bigPromise(
 
       const totalQuotations = await db.Quotation.countDocuments(query);
       const quotations = await db.Quotation.find(query)
-        .populate('userId', 'fullName email')
+        .populate('userId')
         .populate('subServiceId', 'title')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit));
+
+      console.log(quotations);
 
       const response = sendSuccessApiResponse(
         "Quotation requests retrieved successfully", 

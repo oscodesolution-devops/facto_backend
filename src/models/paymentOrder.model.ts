@@ -49,6 +49,11 @@ const PaymentOrderSchema = new mongoose.Schema<IPaymentOrder, PaymentOrderModel>
           required: true,
           min: 0,
         },
+        billingPeriod:{
+          type:String,
+          defualt:"one-time"
+        },
+        selectedFeatures:[String]
       },
     ],
   },

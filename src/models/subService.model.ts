@@ -1,7 +1,41 @@
 import { ISubService, SubServiceModel } from "@/interfaces";
 import mongoose from "mongoose";
 
-const SubServiceSchema = new mongoose.Schema<ISubService, SubServiceModel>(
+const RequestSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    priceModifier: {
+      type: Number,
+      required: true,
+    },
+    needsQuotation: {
+      type: Boolean,
+      required: true,
+    },
+    inputType: {
+      type: String,
+      enum: ["dropdown", "checkbox"],
+      required: true,
+    },
+    isMultipleSelect: {
+      type: Boolean,
+      default: false,
+    },
+    options: [
+      {
+        name: { type: String, required: true },
+        priceModifier: { type: Number, required: true },
+        needsQuotation: { type: Boolean, required: true },
+      },
+    ],
+  },
+  { _id: false } // No need to have a separate `_id` for each request
+);
+
+const SubServiceSchema = new mongoose.Schema(
   {
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,19 +51,13 @@ const SubServiceSchema = new mongoose.Schema<ISubService, SubServiceModel>(
       type: String,
       required: true,
     },
-    requests: [
-      {
-        name: String,
-        priceModifier: Number,
-        needsQuotation: Boolean,
-      },
-    ],
     features: [
       {
         type: String,
         required: true,
       },
     ],
+    requests: [RequestSchema], // Embedded RequestSchema
     price: {
       type: Number,
       required: true,

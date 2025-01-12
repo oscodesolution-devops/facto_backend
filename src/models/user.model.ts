@@ -147,6 +147,9 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
       type: Date,
       default: null,
     },
+    password: {
+      type:String,
+    }
   },
   {
     timestamps: true,

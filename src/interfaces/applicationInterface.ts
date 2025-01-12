@@ -10,6 +10,7 @@ interface IApplication extends mongoose.Document {
   requestedFeatures?: string[];
   createdAt: Date;
   updatedAt: Date;
+  billingPeriod: string;
 }
 
 interface ApplicationModel extends mongoose.Model<IApplication> {}

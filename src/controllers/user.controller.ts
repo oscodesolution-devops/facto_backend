@@ -34,6 +34,7 @@ export const editOwnProfile = bigPromise(
           const user = req.user;
           const {
               fullName,
+              email,
               phoneNumber,
               profilePictureUrl,
               panNumber,
@@ -57,6 +58,7 @@ export const editOwnProfile = bigPromise(
 
           // Update Basic Details
           if (fullName) user.fullName = fullName;
+          if (email) user.email = email;
           if(fathersName) user.fathersName = fathersName;
           if(alternativePhone) user.alternativePhone = alternativePhone;
           if (phoneNumber) user.phoneNumber = phoneNumber;

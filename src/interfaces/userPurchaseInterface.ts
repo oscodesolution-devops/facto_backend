@@ -3,6 +3,7 @@ import mongoose, { Document, Model } from 'mongoose';
 export interface IUserPurchase extends Document {
   userId: mongoose.Types.ObjectId;
   itemType: 'course' | 'service';
+  billingPeriod: String;
   itemId: mongoose.Types.ObjectId;
   paymentOrderId: mongoose.Types.ObjectId|any;
   purchaseDate: Date;

@@ -4,6 +4,8 @@ export interface IPaymentOrderItem {
   itemType: 'course' | 'service';
   itemId: string;
   price: number;
+  billingPeriod?: string;
+  selectedFeatures?: string[];
 }
 
 export interface IPaymentOrder extends Document {

@@ -14,6 +14,10 @@ const UserPurchaseSchema = new mongoose.Schema<IUserPurchase, UserPurchaseModel>
       required: true,
     },
     selectedFeatures: [String],
+    billingPeriod:{
+      type:String,
+      default:"one-time"
+    },
     itemId: {
       type: mongoose.Schema.Types.ObjectId,
       refPath: "itemType",

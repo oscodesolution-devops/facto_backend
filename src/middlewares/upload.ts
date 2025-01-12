@@ -5,6 +5,8 @@ import { Request, Response, NextFunction } from "express";
 import { createCustomError } from "@/errors/customAPIError";
 import { StatusCode } from "@/constants/constants";
 import { configDotenv } from "dotenv";
+import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
 
 configDotenv();
 
@@ -80,7 +82,7 @@ const userDocumentStorage = new CloudinaryStorage({
   params: {
     folder: "user_documents", // folder name in cloudinary for user documents
     allowed_formats: ["jpg", "jpeg", "png", "pdf", "doc", "docx"], // allowed formats for user documents
-    resource_type: "auto", // allows for non-image file types
+    resource_type: "raw", // allows for non-image file types
   } as any,
 });
 

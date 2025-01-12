@@ -17,6 +17,10 @@ const ApplicationSchema = new mongoose.Schema<IApplication, ApplicationModel>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "UserDocument",
   }],
+  billingPeriod:{
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["draft", "submitted", "under_review", "approved", "rejected"],

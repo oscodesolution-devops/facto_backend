@@ -9,7 +9,7 @@ import { NextFunction, Request, Response } from "express";
 export const initiatePayment = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId, items, currency = "INR" } = req.body;
+      const { userId, items, currency = "INR"} = req.body;
 
       if (!userId || !items || items.length === 0 ) {
         return next(
@@ -32,7 +32,6 @@ export const initiatePayment = bigPromise(
         amount,
         currency,
         items,
-        // selectedFeatures,
         status: "pending",
         paymentMethod: "razorpay",
         transactionId: razorpayOrder.id,
@@ -56,7 +55,7 @@ export const initiatePayment = bigPromise(
 
 export const verifyPayment = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature ,selectedFeatures} = req.body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   
       const isValid = await verifyRazorpayPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
   
@@ -86,8 +85,9 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
             userId: paymentOrder.userId,
             itemType: item.itemType,
             itemId: item.itemId,
+            selectedFeatures: item.selectedFeatures,
+            billingPeriod: item.billingPeriod,
             paymentOrderId: paymentOrder._id,
-            selectedFeatures: selectedFeatures,
             status: 'active',
           });
   
