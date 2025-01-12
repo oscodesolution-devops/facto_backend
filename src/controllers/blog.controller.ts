@@ -34,7 +34,7 @@ export const getBlogs = bigPromise(
   
         // Pagination
         const options = {
-          select: 'title imageUrl createdAt tags reference',
+          select: 'title content contentType contentUrl author createdAt tags reference',
           sort: { createdAt: -1 },
           limit: Number(limit),
           skip: (Number(page) - 1) * Number(limit)
