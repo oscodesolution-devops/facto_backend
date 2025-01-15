@@ -6,6 +6,7 @@ interface IService extends mongoose.Document {
   category: string;
   isActive: boolean;
   icon:string;
+  features:string[];
 }
 
 interface ServiceModel extends mongoose.Model<IService> {}

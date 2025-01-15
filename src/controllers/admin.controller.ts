@@ -422,12 +422,36 @@ export const addService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { title, description, category }: IService = req.body;
+      let features: string[] = [];
+
+      // Parse features from form data if present
+      if (req.body.features) {
+        try {
+          features = JSON.parse(req.body.features);
+          // Validate that features is an array
+          if (!Array.isArray(features)) {
+            return next(
+              createCustomError(
+                "Features must be an array",
+                StatusCode.BAD_REQ
+              )
+            );
+          }
+        } catch (error) {
+          return next(
+            createCustomError(
+              "Invalid features format",
+              StatusCode.BAD_REQ
+            )
+          );
+        }
+      }
 
       // Validate required fields
       if (!title || !description || !category) {
         return next(
           createCustomError(
-            "Title and description are required",
+            "Title, description, and category are required",
             StatusCode.BAD_REQ
           )
         );
@@ -447,11 +471,12 @@ export const addService = bigPromise(
       // Get icon URL from uploaded file
       const iconUrl = req.file ? req.file.path : "http"; // default value if no file uploaded
 
-      // Create new service with icon
+      // Create new service with icon and features
       const service = await db.Service.create({
         title,
         description,
         category,
+        features,     // Add features array to service
         isActive: true,
         icon: iconUrl,
       });
@@ -1731,7 +1756,49 @@ export const getAllQuotationRequests = bigPromise(
   }
 );
 
+export const createAdminQuotation = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { userId, subServiceId, selectedFeatures, price } = req.body;
 
+      // Validate required fields
+      if (!userId || !subServiceId || !selectedFeatures || !Array.isArray(selectedFeatures)) {
+        return next(createCustomError("All fields are required", StatusCode.BAD_REQ));
+      }
+
+      // Validate price
+      if (price === undefined || price < 0) {
+        return next(createCustomError("Valid price is required for admin quotation", StatusCode.BAD_REQ));
+      }
+
+      // Validate if user exists
+      const userExists = await db.User.findById(userId);
+      if (!userExists) {
+        return next(createCustomError("User not found", StatusCode.BAD_REQ));
+      }
+
+      // Validate if subService exists
+      const subServiceExists = await db.SubService.findById(subServiceId);
+      if (!subServiceExists) {
+        return next(createCustomError("Sub Service not found", StatusCode.BAD_REQ));
+      }
+
+      // Create quotation with price
+      const newQuotation = await db.Quotation.create({
+        userId,
+        subServiceId,
+        selectedFeatures,
+        price,
+      });
+
+      // Send success response
+      const response = sendSuccessApiResponse("Admin quotation created successfully", newQuotation);
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
 
 export const updateQuotationPrice = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {

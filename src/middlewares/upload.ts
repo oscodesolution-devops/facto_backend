@@ -21,7 +21,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "services", // folder name in cloudinary
-    allowed_formats: ["jpg", "jpeg", "png", "svg"], // allowed formats
+    allowed_formats: ["jpg", "jpeg", "png", "svg","svg+xml"], // allowed formats
     transformation: [{ width: 500, height: 500, crop: "limit" }], // optional transformations
   } as any, // Bypass TypeScript checks
 });

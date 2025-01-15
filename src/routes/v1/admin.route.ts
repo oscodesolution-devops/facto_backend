@@ -285,6 +285,9 @@ router
 router
   .route("/quotation")
   .get(verifyToken,isAdmin,controllers.adminController.getAllQuotationRequests);
+router
+  .route("/quotation")
+  .post(verifyToken,isAdmin,controllers.adminController.createAdminQuotation);
 
 router
   .route("/quotation/:quotationId")

@@ -8,7 +8,7 @@ const ServiceSchema = new mongoose.Schema<IService, ServiceModel>(
       required: true,
       trim: true,
     },
-    category:{
+    category: {
       type: String,
       required: true,
       trim: true,
@@ -21,9 +21,19 @@ const ServiceSchema = new mongoose.Schema<IService, ServiceModel>(
       type: Boolean,
       default: true,
     },
-    icon:{
-        type:String,
-        default:"http"
+    icon: {
+      type: String,
+      default: "http"
+    },
+    features: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return Array.isArray(v);
+        },
+        message: 'Features must be an array of strings'
+      }
     }
   },
   {
