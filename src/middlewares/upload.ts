@@ -31,7 +31,7 @@ const storage = new CloudinaryStorage({
 export const uploadIcon = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 2, // 2MB limit
+    fileSize: 1024 * 1024 * 5, // 2MB limit
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {

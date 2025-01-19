@@ -1441,6 +1441,7 @@ export const createBlog = bigPromise(
       } = req.body;
 console.log("sss")
       console.log(req.body);
+      console.log(req.file)
 
       // Parse reference if it's a string
       const parsedReference =
@@ -1455,7 +1456,6 @@ console.log("sss")
         !title ||
         !content ||
         !contentType ||
-        !contentUrl ||
         !parsedReference ||
         !parsedReference.title ||
         !parsedReference.url

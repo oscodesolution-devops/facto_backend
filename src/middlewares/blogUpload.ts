@@ -29,7 +29,7 @@ export const uploadBlogMaterials = multer({
     }
   },
 }).fields([
-  { name: "content", maxCount: 1 }, // Single content file
+  { name: "thumbnail", maxCount: 1 }, // Single content file
 ]);
 
 export const processBlogContentUpload = async (
@@ -41,14 +41,14 @@ export const processBlogContentUpload = async (
     if (error) {
       return res.status(400).json({ message: error.message });
     }
-    // console.log("ss")
+    console.log(req.file);
     try {
       if (!req.files || !isFileDictionary(req.files)) {
         throw createCustomError("No files were uploaded.", StatusCode.BAD_REQ);
       }
 
       const uploadPromises = [];
-      const contentFile = req.files["content"]?.[0];
+      const contentFile = req.files["thumbnail"]?.[0];
 
       if (contentFile) {
         const contentUploadPromise = new Promise((resolve, reject) => {
