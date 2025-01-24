@@ -34,6 +34,25 @@ export const addUser = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Use the existing signup controller
+      const {phoneNo} = req.body;
+      console.log(req.body)
+      if(!phoneNo){
+        return next(createCustomError("Phone Number is required",StatusCode.NOT_FOUND));
+      }
+
+      let user = await db.User.findOne({phoneNumber:phoneNo});
+
+      if(user){
+        return next(createCustomError("Phone Number Already Exist",StatusCode.BAD_REQ));
+      }
+
+      user = await db.User.create({phoneNumber:phoneNo})
+      
+      const response = sendSuccessApiResponse(
+        "User added Successful!",
+        { user }
+      );
+      res.status(StatusCode.OK).send(response);
       // await signup(req, res, next);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
