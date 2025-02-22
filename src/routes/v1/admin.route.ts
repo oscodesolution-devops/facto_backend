@@ -31,7 +31,7 @@ router.get(
   verifyToken,
   isAdmin,
   controllers.adminController.getUserById
-)
+);
 router.post(
   "/add-user",
   verifyToken,
@@ -237,7 +237,7 @@ router.put(
   verifyToken,
   isAdmin,
   controllers.adminController.updateCourse
-)
+);
 
 router
   .route("/blogs")
@@ -272,33 +272,50 @@ router
 
 router
   .route("/request")
-  .get(verifyToken,isAdmin,controllers.adminController.getRequest);
+  .get(verifyToken, isAdmin, controllers.adminController.getRequest);
 
 router
   .route("/request")
-  .post(verifyToken,isAdmin,controllers.requestController.addRequest);
+  .post(verifyToken, isAdmin, controllers.requestController.addRequest);
 
-  router
+router
   .route("/request/:id")
-  .post(verifyToken,isAdmin,controllers.requestController.assignEmployee);
+  .post(verifyToken, isAdmin, controllers.requestController.assignEmployee);
 
 router
   .route("/quotation")
-  .get(verifyToken,isAdmin,controllers.adminController.getAllQuotationRequests);
+  .get(
+    verifyToken,
+    isAdmin,
+    controllers.adminController.getAllQuotationRequests
+  );
 router
   .route("/quotation")
-  .post(verifyToken,isAdmin,controllers.adminController.createAdminQuotation);
+  .post(verifyToken, isAdmin, controllers.adminController.createAdminQuotation);
 
 router
   .route("/quotation/:quotationId")
-  .put(verifyToken,isAdmin,controllers.adminController.updateQuotationPrice);
+  .put(verifyToken, isAdmin, controllers.adminController.updateQuotationPrice);
 
 router
   .route("/quotation/:userId")
-  .get(verifyToken,isAdmin,controllers.adminController.findQuotationsByUserId);
+  .get(
+    verifyToken,
+    isAdmin,
+    controllers.adminController.findQuotationsByUserId
+  );
 
-router.put('/applications/:applicationId', verifyToken,isAdmin, controllers.adminController.updateApplication);
-router.get('/subservices/:subServiceId/applications', verifyToken,isAdmin, controllers.adminController.getAllApplicationsBySubService);
-
+router.put(
+  "/applications/:applicationId",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.updateApplication
+);
+router.get(
+  "/subservices/:subServiceId/applications",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.getAllApplicationsBySubService
+);
 
 export default router;

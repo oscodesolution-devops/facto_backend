@@ -718,6 +718,7 @@ export const createSubService = bigPromise(
         period,
         isActive,
         requests,
+        pricingStructure,
       } = req.body;
 
       // Validate serviceId
@@ -737,6 +738,7 @@ export const createSubService = bigPromise(
         period,
         isActive,
         requests, // Array of requests, each with its own structure
+        pricingStructure,
       });
 
       const response = sendSuccessApiResponse(
@@ -760,6 +762,7 @@ export const updateSubService = bigPromise(
     try {
       const { subServiceId } = req.params;
       const updateData = req.body;
+      console.log("updateData", updateData);
 
       // Validate subServiceId
       if (!mongoose.Types.ObjectId.isValid(subServiceId)) {
