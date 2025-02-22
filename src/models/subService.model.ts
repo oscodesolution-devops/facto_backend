@@ -72,6 +72,16 @@ const SubServiceSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    pricingStructure: [
+      {
+        price: { type: Number, required: true },
+        period: {
+          type: String,
+          enum: ["monthly", "quarterly", "half_yearly", "yearly", "one_time"],
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
