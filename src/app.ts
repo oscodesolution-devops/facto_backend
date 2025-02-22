@@ -9,22 +9,25 @@ import { RequestHandler, ErrorRequestHandler } from "./types/middleware.js";
 // import notFound from "./errors/notFound.js";
 import errorHandlerMiddleware from "@/middlewares/errorHandler";
 // import {
-    // generateRequestId,
+// generateRequestId,
 
 // } from "./middlewares/commonMiddleware.js";
 import { connectDB } from "@/config/db";
 import notFound from "@/errors/notFound";
-import { generateRequestId,    logRequest,
-    logResponse,} from "@/middlewares/commonMiddleware";
+import {
+  generateRequestId,
+  logRequest,
+  logResponse,
+} from "@/middlewares/commonMiddleware";
 import router from "@/routes";
 // import { connectDB } from "./config/db.js";
 
 // Define CORS options with explicit typing
 const corsOptions: cors.CorsOptions = {
-    origin: "*",
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+  origin: "*",
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 
 // Load environment variables
@@ -33,7 +36,7 @@ dotenv.config({ path: `.env` });
 // Create Express application
 const app: Express = express();
 
-connectDB()
+connectDB();
 
 // Express configuration
 app.set("port", process.env.PORT || 3000);
@@ -48,8 +51,7 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cors(corsOptions));
 app.options("*", cors());
 
-
-app.use(httpContext.middleware);
+app.use(httpContext.middleware as unknown as RequestHandler);
 app.use(generateRequestId as RequestHandler);
 
 // Request logging middleware
