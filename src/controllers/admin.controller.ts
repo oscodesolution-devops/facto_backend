@@ -34,24 +34,27 @@ export const addUser = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Use the existing signup controller
-      const {phoneNo} = req.body;
-      console.log(req.body)
-      if(!phoneNo){
-        return next(createCustomError("Phone Number is required",StatusCode.NOT_FOUND));
+      const { phoneNo } = req.body;
+      console.log(req.body);
+      if (!phoneNo) {
+        return next(
+          createCustomError("Phone Number is required", StatusCode.NOT_FOUND)
+        );
       }
 
-      let user = await db.User.findOne({phoneNumber:phoneNo});
+      let user = await db.User.findOne({ phoneNumber: phoneNo });
 
-      if(user){
-        return next(createCustomError("Phone Number Already Exist",StatusCode.BAD_REQ));
+      if (user) {
+        return next(
+          createCustomError("Phone Number Already Exist", StatusCode.BAD_REQ)
+        );
       }
 
-      user = await db.User.create({phoneNumber:phoneNo})
-      
-      const response = sendSuccessApiResponse(
-        "User added Successful!",
-        { user }
-      );
+      user = await db.User.create({ phoneNumber: phoneNo });
+
+      const response = sendSuccessApiResponse("User added Successful!", {
+        user,
+      });
       res.status(StatusCode.OK).send(response);
       // await signup(req, res, next);
     } catch (error: any) {
@@ -63,18 +66,28 @@ export const addUser = bigPromise(
 export const addEmployee = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { phoneNumber,email,fullName } = req.body;
+      const { phoneNumber, email, fullName } = req.body;
       // Use the existing signup controller
       // await signup(req, res, next);
-      const existingEmployee = await db.User.findOne({phoneNumber});
-      if(existingEmployee){
-        return next(createCustomError("Employee already exist with this phone number", StatusCode.BAD_REQ));
+      const existingEmployee = await db.User.findOne({ phoneNumber });
+      if (existingEmployee) {
+        return next(
+          createCustomError(
+            "Employee already exist with this phone number",
+            StatusCode.BAD_REQ
+          )
+        );
       }
-      const user =await db.User.create({phoneNumber,email,fullName,role:"employee"});
-      
+      const user = await db.User.create({
+        phoneNumber,
+        email,
+        fullName,
+        role: "employee",
+      });
+
       await user.save();
       const response = sendSuccessApiResponse("Employee added successfully", {
-        employee:user,
+        employee: user,
       });
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
@@ -293,6 +306,7 @@ export const editUserProfile = bigPromise(
       const {
         fullName,
         phoneNumber,
+        email,
         aadharNumber,
         panNumber,
         dateOfBirth,
@@ -312,6 +326,7 @@ export const editUserProfile = bigPromise(
       // Update user fields
       if (fullName) user.fullName = fullName;
       if (phoneNumber) user.phoneNumber = phoneNumber;
+      if (email) user.email = email;
       if (aadharNumber) user.aadharNumber = aadharNumber;
       if (panNumber) user.panNumber = panNumber;
       if (dateOfBirth) user.dateOfBirth = new Date(dateOfBirth);
@@ -450,18 +465,12 @@ export const addService = bigPromise(
           // Validate that features is an array
           if (!Array.isArray(features)) {
             return next(
-              createCustomError(
-                "Features must be an array",
-                StatusCode.BAD_REQ
-              )
+              createCustomError("Features must be an array", StatusCode.BAD_REQ)
             );
           }
         } catch (error) {
           return next(
-            createCustomError(
-              "Invalid features format",
-              StatusCode.BAD_REQ
-            )
+            createCustomError("Invalid features format", StatusCode.BAD_REQ)
           );
         }
       }
@@ -495,7 +504,7 @@ export const addService = bigPromise(
         title,
         description,
         category,
-        features,     // Add features array to service
+        features, // Add features array to service
         isActive: true,
         icon: iconUrl,
       });
@@ -701,7 +710,15 @@ export const createSubService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { serviceId } = req.params;
-      const { title, description, features, price, period, isActive, requests } = req.body;
+      const {
+        title,
+        description,
+        features,
+        price,
+        period,
+        isActive,
+        requests,
+      } = req.body;
 
       // Validate serviceId
       if (!mongoose.Types.ObjectId.isValid(serviceId)) {
@@ -1458,17 +1475,16 @@ export const createBlog = bigPromise(
         tags,
         author,
       } = req.body;
-console.log("sss")
+      console.log("sss");
       console.log(req.body);
-      console.log(req.file)
+      console.log(req.file);
 
       // Parse reference if it's a string
       const parsedReference =
         typeof reference === "string" ? JSON.parse(reference) : reference;
 
       // Parse tags if it's a string
-      const parsedTags =
-        typeof tags === "string" ? JSON.parse(tags) : tags;
+      const parsedTags = typeof tags === "string" ? JSON.parse(tags) : tags;
 
       // Validate required fields
       if (
@@ -1483,7 +1499,7 @@ console.log("sss")
         if (req.file) {
           await deleteUploadedFiles(req.file.path);
         }
-        console.log("jsjs")
+        console.log("jsjs");
         return next(
           createCustomError(
             "Title, content, content type, content URL, and valid reference are required",
@@ -1513,7 +1529,7 @@ console.log("sss")
       });
       res.status(StatusCode.CREATED).send(response);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // Clean up any uploaded files in case of error
       if (req.file) {
         await deleteUploadedFiles(req.file.path);
@@ -1589,7 +1605,7 @@ export const deleteBlog = bigPromise(
       }
 
       // Delete the associated file if it exists
-      if (blog.contentUrl && blog.contentUrl.startsWith('/uploads/')) {
+      if (blog.contentUrl && blog.contentUrl.startsWith("/uploads/")) {
         await deleteUploadedFiles(blog.contentUrl.slice(1)); // Remove leading slash
       }
 
@@ -1637,8 +1653,7 @@ export const updateBlog = bigPromise(
         typeof reference === "string" ? JSON.parse(reference) : reference;
 
       // Parse tags if it's a string
-      const parsedTags =
-        typeof tags === "string" ? JSON.parse(tags) : tags;
+      const parsedTags = typeof tags === "string" ? JSON.parse(tags) : tags;
 
       // Update blog fields
       blog.title = title || blog.title;
@@ -1660,7 +1675,7 @@ export const updateBlog = bigPromise(
       // Handle content URL update
       if (contentUrl && contentUrl !== blog.contentUrl) {
         // Delete old file if it exists
-        if (blog.contentUrl && blog.contentUrl.startsWith('/uploads/')) {
+        if (blog.contentUrl && blog.contentUrl.startsWith("/uploads/")) {
           await deleteUploadedFiles(blog.contentUrl.slice(1)); // Remove leading slash
         }
         blog.contentUrl = contentUrl;
@@ -1730,7 +1745,10 @@ export const addCommentToQuery = bigPromise(
 export const getRequest = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const requests = await db.Request.find().sort({ createdAt: -1 }).populate('assignee').select("phoneNo fullName");
+      const requests = await db.Request.find()
+        .sort({ createdAt: -1 })
+        .populate("assignee")
+        .select("phoneNo fullName");
       const response = sendSuccessApiResponse("Requests fetched successfully", {
         requests,
       });
@@ -1744,15 +1762,15 @@ export const getRequest = bigPromise(
 export const getAllQuotationRequests = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const {  page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10 } = req.query;
 
-      const query =  {};
+      const query = {};
       const skip = (Number(page) - 1) * Number(limit);
 
       const totalQuotations = await db.Quotation.countDocuments(query);
       const quotations = await db.Quotation.find(query)
-        .populate('userId')
-        .populate('subServiceId', 'title')
+        .populate("userId")
+        .populate("subServiceId", "title")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit));
@@ -1760,12 +1778,12 @@ export const getAllQuotationRequests = bigPromise(
       console.log(quotations);
 
       const response = sendSuccessApiResponse(
-        "Quotation requests retrieved successfully", 
+        "Quotation requests retrieved successfully",
         {
           quotations,
           totalQuotations,
           page: Number(page),
-          totalPages: Math.ceil(totalQuotations / Number(limit))
+          totalPages: Math.ceil(totalQuotations / Number(limit)),
         }
       );
       res.status(StatusCode.OK).send(response);
@@ -1781,13 +1799,25 @@ export const createAdminQuotation = bigPromise(
       const { userId, subServiceId, selectedFeatures, price } = req.body;
 
       // Validate required fields
-      if (!userId || !subServiceId || !selectedFeatures || !Array.isArray(selectedFeatures)) {
-        return next(createCustomError("All fields are required", StatusCode.BAD_REQ));
+      if (
+        !userId ||
+        !subServiceId ||
+        !selectedFeatures ||
+        !Array.isArray(selectedFeatures)
+      ) {
+        return next(
+          createCustomError("All fields are required", StatusCode.BAD_REQ)
+        );
       }
 
       // Validate price
       if (price === undefined || price < 0) {
-        return next(createCustomError("Valid price is required for admin quotation", StatusCode.BAD_REQ));
+        return next(
+          createCustomError(
+            "Valid price is required for admin quotation",
+            StatusCode.BAD_REQ
+          )
+        );
       }
 
       // Validate if user exists
@@ -1799,7 +1829,9 @@ export const createAdminQuotation = bigPromise(
       // Validate if subService exists
       const subServiceExists = await db.SubService.findById(subServiceId);
       if (!subServiceExists) {
-        return next(createCustomError("Sub Service not found", StatusCode.BAD_REQ));
+        return next(
+          createCustomError("Sub Service not found", StatusCode.BAD_REQ)
+        );
       }
 
       // Create quotation with price
@@ -1811,7 +1843,10 @@ export const createAdminQuotation = bigPromise(
       });
 
       // Send success response
-      const response = sendSuccessApiResponse("Admin quotation created successfully", newQuotation);
+      const response = sendSuccessApiResponse(
+        "Admin quotation created successfully",
+        newQuotation
+      );
       res.status(StatusCode.OK).send(response);
     } catch (error: any) {
       next(createCustomError(error.message, StatusCode.INT_SER_ERR));
@@ -1828,22 +1863,19 @@ export const updateQuotationPrice = bigPromise(
       const updatedQuotation = await db.Quotation.findByIdAndUpdate(
         quotationId,
         {
-          price:totalPrice,
+          price: totalPrice,
         },
         { new: true, runValidators: true }
       );
 
       if (!updatedQuotation) {
         return next(
-          createCustomError(
-            "Quotation not found", 
-            StatusCode.NOT_FOUND
-          )
+          createCustomError("Quotation not found", StatusCode.NOT_FOUND)
         );
       }
 
       const response = sendSuccessApiResponse(
-        "Quotation updated successfully", 
+        "Quotation updated successfully",
         updatedQuotation
       );
       res.status(StatusCode.OK).send(response);
@@ -1856,8 +1888,8 @@ export const updateQuotationPrice = bigPromise(
 export const findQuotationsByUserId = bigPromise(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const {userId} = req.params;
-      const {  page = 1, limit = 10 } = req.query;
+      const { userId } = req.params;
+      const { page = 1, limit = 10 } = req.query;
 
       const query = { userId };
 
@@ -1865,18 +1897,18 @@ export const findQuotationsByUserId = bigPromise(
 
       const totalQuotations = await db.Quotation.countDocuments(query);
       const quotations = await db.Quotation.find(query)
-        .populate('subServiceId', 'title description')
+        .populate("subServiceId", "title description")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit));
 
       const response = sendSuccessApiResponse(
-        "User quotations retrieved successfully", 
+        "User quotations retrieved successfully",
         {
           quotations,
           totalQuotations,
           page: Number(page),
-          totalPages: Math.ceil(totalQuotations / Number(limit))
+          totalPages: Math.ceil(totalQuotations / Number(limit)),
         }
       );
       res.status(StatusCode.OK).send(response);
@@ -1885,7 +1917,6 @@ export const findQuotationsByUserId = bigPromise(
     }
   }
 );
-
 
 // controllers/applicationController.ts (add to existing file)
 
@@ -1906,12 +1937,12 @@ export const updateApplication = bigPromise(
         userDocuments = [],
         additionalNotes,
         requestedFeatures,
-        status
+        status,
       } = req.body;
 
       // Find the existing application
       const application = await db.Application.findOne({
-        _id: applicationId
+        _id: applicationId,
       });
 
       if (!application) {
@@ -1923,31 +1954,32 @@ export const updateApplication = bigPromise(
       // Validate user documents
       const validatedDocuments = await Promise.all(
         userDocuments.map(async (docId: string) => {
-          const doc = await db.UserDocument.findOne({ 
-            _id: docId, 
+          const doc = await db.UserDocument.findOne({
+            _id: docId,
             // userId: userId,
-            subServiceId: application.subServiceId
+            subServiceId: application.subServiceId,
           });
           return doc ? doc._id : null;
         })
       );
 
       // Filter out null values
-      const filteredDocuments = validatedDocuments.filter(doc => doc !== null);
+      const filteredDocuments = validatedDocuments.filter(
+        (doc) => doc !== null
+      );
 
       // Update application
       application.userDocuments = filteredDocuments;
       if (additionalNotes) application.additionalNotes = additionalNotes;
       if (requestedFeatures) application.requestedFeatures = requestedFeatures;
-      
+
       // Only allow certain status changes
       const allowedStatusChanges = {
-        draft: ['submitted'],
-        submitted: ['draft']
+        draft: ["submitted"],
+        submitted: ["draft"],
       };
 
       if (status) {
-        
         application.status = status;
       }
 
@@ -1955,13 +1987,13 @@ export const updateApplication = bigPromise(
 
       const response = sendSuccessApiResponse(
         "Application updated successfully",
-        { 
+        {
           application,
-          message: status 
-            ? (status === 'submitted' 
-              ? "Your application has been submitted for review" 
-              : "Application draft saved")
-            : "Application updated"
+          message: status
+            ? status === "submitted"
+              ? "Your application has been submitted for review"
+              : "Application draft saved"
+            : "Application updated",
         }
       );
 
@@ -1977,12 +2009,12 @@ export const getAllApplicationsBySubService = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { subServiceId } = req.params;
-      const { 
-        status, 
-        page = 1, 
-        limit = 10, 
-        sortBy = 'createdAt', 
-        sortOrder = 'desc' 
+      const {
+        status,
+        page = 1,
+        limit = 10,
+        sortBy = "createdAt",
+        sortOrder = "desc",
       } = req.query;
 
       const subService = await db.SubService.findById(subServiceId);
@@ -1999,7 +2031,7 @@ export const getAllApplicationsBySubService = bigPromise(
       // Pagination and sorting
       const skipIndex = (Number(page) - 1) * Number(limit);
       const sortOptions: any = {};
-      sortOptions[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+      sortOptions[sortBy as string] = sortOrder === "desc" ? -1 : 1;
 
       // Fetch applications with pagination and population
       const applications = await db.Application.find(query)
@@ -2007,12 +2039,12 @@ export const getAllApplicationsBySubService = bigPromise(
         .skip(skipIndex)
         .limit(Number(limit))
         .populate({
-          path: 'userId',
-          select: 'name email phone' // Select specific user fields
+          path: "userId",
+          select: "name email phone", // Select specific user fields
         })
         .populate({
-          path: 'userDocuments',
-          select: 'title documentType documentUrl'
+          path: "userDocuments",
+          select: "title documentType documentUrl",
         });
 
       // Count total matching documents
@@ -2020,14 +2052,14 @@ export const getAllApplicationsBySubService = bigPromise(
 
       const response = sendSuccessApiResponse(
         "Applications retrieved successfully",
-        { 
+        {
           applications,
           pagination: {
             total,
             page: Number(page),
             limit: Number(limit),
-            totalPages: Math.ceil(total / Number(limit))
-          }
+            totalPages: Math.ceil(total / Number(limit)),
+          },
         }
       );
 
