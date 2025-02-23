@@ -39,7 +39,7 @@ const app: Express = express();
 connectDB();
 
 // Express configuration
-app.set("port", process.env.PORT || 3000);
+app.set("port", process.env.PORT || 8080);
 app.set("dev", process.env.NODE_ENV || "development");
 
 // Middleware configuration
