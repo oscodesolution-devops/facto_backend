@@ -12,9 +12,9 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "baseUrl": "./src",  // Changed this
+    "baseUrl": "./src", // Changed this
     "paths": {
-      "@/*": ["./*"],    // Changed this
+      "@/*": ["./*"], // Changed this
       "@controllers/*": ["controllers/*"],
       "@models/*": ["models/*"],
       "@interfaces/*": ["interfaces/*"],
