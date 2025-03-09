@@ -34,15 +34,25 @@ export const addUser = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Use the existing signup controller
-      const { phoneNo } = req.body;
-      console.log(req.body);
+
+      const {
+        email,
+        password,
+        fullName,
+        phoneNo,
+        aadharNumber,
+        panNumber,
+        dateOfBirth,
+      } = req.body;
       if (!phoneNo) {
         return next(
           createCustomError("Phone Number is required", StatusCode.NOT_FOUND)
         );
       }
 
-      let user = await db.User.findOne({ phoneNumber: phoneNo });
+      let user = await db.User.findOne({
+        phoneNumber: phoneNo,
+      });
 
       if (user) {
         return next(
@@ -50,7 +60,15 @@ export const addUser = bigPromise(
         );
       }
 
-      user = await db.User.create({ phoneNumber: phoneNo });
+      user = await db.User.create({
+        phoneNumber: phoneNo,
+        email,
+        password,
+        fullName,
+        aadharNumber,
+        panNumber,
+        dateOfBirth,
+      });
 
       const response = sendSuccessApiResponse("User added Successful!", {
         user,
