@@ -1229,6 +1229,40 @@ export const updateCourse = bigPromise(
   }
 );
 
+export const deleteCourse = bigPromise(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { courseId } = req.params;
+
+      // Check if the course exists
+      const existingCourse = await db.Course.findById(courseId);
+      if (!existingCourse) {
+        return next(
+          createCustomError("Course not found", StatusCode.NOT_FOUND)
+        );
+      }
+
+      // Delete all lectures associated with the course
+      if (existingCourse.lectures && existingCourse.lectures.length > 0) {
+        await db.Lecture.deleteMany({ _id: { $in: existingCourse.lectures } });
+      }
+
+      // Delete the course
+      await db.Course.findByIdAndDelete(courseId);
+
+      const response = sendSuccessApiResponse("Course deleted successfully", {
+        // course: existingCourse,
+      });
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      if (error.name === "ValidationError") {
+        return next(createCustomError(error.message, StatusCode.BAD_REQ));
+      }
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
 export const getCourses = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {

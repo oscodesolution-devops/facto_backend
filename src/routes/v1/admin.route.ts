@@ -238,6 +238,12 @@ router.put(
   isAdmin,
   controllers.adminController.updateCourse
 );
+router.delete(
+  "/courses/:courseId",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.deleteCourse
+);
 
 router
   .route("/blogs")
