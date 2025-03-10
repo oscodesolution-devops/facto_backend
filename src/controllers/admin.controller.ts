@@ -292,6 +292,53 @@ export const getUserById = bigPromise(
   }
 );
 
+export const updateEmployee = bigPromise(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      const { email, fullName, phoneNumber } = req.body;
+
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return next(createCustomError("Invalid user ID", StatusCode.BAD_REQ));
+      }
+
+      const user = await db.User.findById(userId).select("-password");
+
+      if (user && user?.role !== "employee") {
+        return next(createCustomError("User not found", StatusCode.NOT_FOUND));
+      }
+
+      const updatedEmail = email !== user.email ? email : user.email;
+      const updatedFullName =
+        fullName !== user.fullName ? fullName : user.fullName;
+      const updatedPhone =
+        phoneNumber !== user.phoneNumber ? phoneNumber : user.phoneNumber;
+
+      const updatedUser = await db.User.findByIdAndUpdate(
+        userId,
+        {
+          email: updatedEmail,
+          fullName: updatedFullName,
+          phoneNumber: updatedPhone,
+        },
+        { new: true }
+      ).select("-password");
+
+      if (!updatedUser) {
+        return next(createCustomError("User not found", StatusCode.NOT_FOUND));
+      }
+
+      const response = sendSuccessApiResponse(
+        "User details updated successfully",
+        { user: updatedUser }
+      );
+      res.status(StatusCode.OK).send(response);
+    } catch (error: any) {
+      next(createCustomError(error.message, StatusCode.INT_SER_ERR));
+    }
+  }
+);
+
 export const deleteUserById = bigPromise(
   async (req: Request, res: Response, next: NextFunction) => {
     try {

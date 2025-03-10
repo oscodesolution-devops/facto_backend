@@ -32,6 +32,12 @@ router.get(
   isAdmin,
   controllers.adminController.getUserById
 );
+router.put(
+  "/employee/:userId",
+  verifyToken,
+  isAdmin,
+  controllers.adminController.updateEmployee
+);
 router.post(
   "/add-user",
   verifyToken,
